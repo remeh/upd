@@ -7,8 +7,8 @@ import (
 )
 
 type Metadatas struct {
-	CreationTime time.Time
-	Metadata     []Metadata
+	CreationTime time.Time           `json:"creation_time"`
+	Data         map[string]Metadata `json:"metadatas"`
 }
 
 type Metadata struct {
