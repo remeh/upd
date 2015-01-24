@@ -50,7 +50,7 @@ Available flags:
 
 ### Upload a file with the client
 
-Now that the server is up and running, you can upload a files with this command:
+Now that the server is up and running, you can upload files with this command:
 
 ```
 gom build bin/client/client.go
