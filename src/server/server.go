@@ -44,10 +44,12 @@ func (s *Server) Start() {
 
 	if len(s.Flags.CertificateFile) != 0 && len(s.Flags.CertificateKey) != 0 {
 		log.Println("[info] Start secure listening on", s.Flags.Addr)
-		http.ListenAndServeTLS(s.Flags.Addr, s.Flags.CertificateFile, s.Flags.CertificateKey, nil)
+		err := http.ListenAndServeTLS(s.Flags.Addr, s.Flags.CertificateFile, s.Flags.CertificateKey, nil)
+		log.Println("[err]", err.Error())
 	} else {
 		log.Println("[info] Start listening on", s.Flags.Addr)
-		http.ListenAndServe(s.Flags.Addr, nil)
+		err := http.ListenAndServe(s.Flags.Addr, nil)
+		log.Println("[err]", err.Error())
 	}
 }
 
