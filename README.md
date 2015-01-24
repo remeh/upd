@@ -53,8 +53,8 @@ Available flags:
 Now that the server is up and running, you can upload a files with this command:
 
 ```
-gom build bin/client/client.go file1 file2 file3
-./client
+gom build bin/client/client.go
+./client file1 file2 file3 ...
 ```
 
 it'll return the URL to share/delete the uploaded files.
