@@ -62,8 +62,7 @@ Available flags:
   * Client uploading files *[ok]*
     * Keepname option
     * TTL option [*ok*]
-  * Secret key
-  * Cache on serving
+  * Secret key *[ok]*
   * TTL *[ok]*
   * Delete link *[ok]*
   * TLS

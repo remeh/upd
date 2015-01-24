@@ -15,6 +15,10 @@ type SendHandler struct {
 	Server *Server // pointer to the started server
 }
 
+const (
+	SECRET_KEY_HEADER = "X-Cloudia-Key"
+)
+
 // Json returned to the client
 type SendResponse struct {
 	Name         string `json:"name"`
@@ -28,6 +32,14 @@ const (
 )
 
 func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// checks the secret key
+	key := r.Header.Get(SECRET_KEY_HEADER)
+	if s.Server.Flags.SecretKey != "" && key != s.Server.Flags.SecretKey {
+		w.WriteHeader(403)
+		return
+	}
+
+	// parse the form
 	reader, _, err := r.FormFile("data")
 
 	if err != nil {

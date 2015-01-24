@@ -42,6 +42,7 @@ func (s *Server) Start() {
 
 	// Listen
 	// TODO TLS support
+	log.Println("[info] Start listening on", s.Flags.Addr)
 	http.ListenAndServe(s.Flags.Addr, nil)
 }
 

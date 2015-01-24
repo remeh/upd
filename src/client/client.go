@@ -75,6 +75,10 @@ func (c *Client) sendData(filename string, data []byte) error {
 		return err
 	}
 
+	// adds the secret key if any
+	if len(c.Flags.SecretKey) > 0 {
+		req.Header.Set(server.SECRET_KEY_HEADER, c.Flags.SecretKey)
+	}
 	// execute
 	resp, err := client.Do(req)
 	if err != nil {
@@ -83,7 +87,7 @@ func (c *Client) sendData(filename string, data []byte) error {
 	}
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("Received a %d while sending: %s", resp.StatusCode, filename)
+		return fmt.Errorf("[err] Received a %d while sending: %s", resp.StatusCode, filename)
 	}
 
 	// read the name given by the server
