@@ -61,6 +61,7 @@ func main() {
 	flags, err := parseFlags()
 	if err != nil {
 		fmt.Println(`Wrong duration format, it should be such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"`)
+		os.Exit(1)
 	}
 
 	// Looks for the file to send
