@@ -34,9 +34,11 @@ func parseFlags() (client.Flags, error) {
 	}
 
 	// checks that the given ttl is correct
-	_, err := time.ParseDuration(flags.TTL)
-	if err != nil {
-		return flags, err
+	if flags.TTL != "" {
+		_, err := time.ParseDuration(flags.TTL)
+		if err != nil {
+			return flags, err
+		}
 	}
 
 	return flags, nil

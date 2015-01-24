@@ -52,4 +52,5 @@ func (s *DeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.Server.writeMetadata()
 
 	w.WriteHeader(200)
+	w.Write([]byte("File deleted."))
 }

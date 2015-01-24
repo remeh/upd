@@ -101,11 +101,13 @@ func (c *Client) sendData(filename string, data []byte) error {
 		log.Println("[err] Unable to read the returned JSON.")
 	}
 
+	fmt.Println("For file :", filename)
 	fmt.Println("URL:", c.Flags.ServerUrl+"/"+sendResponse.Name)
 	fmt.Println("Delete URL:", c.Flags.ServerUrl+"/"+sendResponse.Name+"/"+sendResponse.DeleteKey)
 
 	// compute until when it'll be available
 	fmt.Println("Available until:", sendResponse.DeletionTime)
+	fmt.Println("--")
 
 	return nil
 }
