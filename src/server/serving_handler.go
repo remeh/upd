@@ -45,7 +45,7 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		fileEndlife := entry.CreationTime.Add(duration)
 		if fileEndlife.Before(now) {
 			// No longer alive!
-			err := s.expire(entry)
+			err := s.Server.Expire(entry)
 			if err != nil {
 				log.Println("[warn] While deleting file:", entry.Filename)
 				log.Println(err)
@@ -78,9 +78,4 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	contentType := http.DetectContentType(data)
 	w.Header().Set("Content-Type", contentType)
 	w.Write(data)
-}
-
-func (s *ServingHandler) expire(m Metadata) error {
-	delete(s.Server.Metadata.Data, m.Filename)
-	return os.Remove(s.Server.Flags.OutputDirectory + "/" + m.Filename)
 }

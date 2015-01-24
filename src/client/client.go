@@ -5,6 +5,7 @@ package client
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -12,6 +13,8 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+
+	"server"
 )
 
 type Client struct {
@@ -60,7 +63,7 @@ func (c *Client) sendData(filename string, data []byte) error {
 
 	// create the request
 	client := http.Client{}
-	url := c.Flags.ServerUrl + "/api/send"
+	url := c.Flags.ServerUrl + "/1.0/send"
 	if len(c.Flags.TTL) > 0 {
 		url = url + "?ttl=" + c.Flags.TTL
 	}
@@ -87,12 +90,23 @@ func (c *Client) sendData(filename string, data []byte) error {
 	defer resp.Body.Close()
 	readBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("[err] Unable to read the name given by the server.")
+		log.Println("[err] Unable to read the body returned by the server.")
 		return err
 	}
-	name := string(readBody)
 
-	fmt.Println(c.Flags.ServerUrl + "/" + name)
+	// decodes the json
+	var sendResponse server.SendResponse
+	err = json.Unmarshal(readBody, &sendResponse)
+	if err != nil {
+		log.Println("[err] Unable to read the returned JSON.")
+	}
+
+	fmt.Println("URL:", c.Flags.ServerUrl+"/"+sendResponse.Name)
+	fmt.Println("Delete URL:", c.Flags.ServerUrl+"/"+sendResponse.Name+"/"+sendResponse.DeleteKey)
+
+	// compute until when it'll be available
+	fmt.Println("Available until:", sendResponse.DeletionTime)
+
 	return nil
 }
 

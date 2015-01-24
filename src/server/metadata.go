@@ -12,7 +12,9 @@ type Metadatas struct {
 }
 
 type Metadata struct {
-	Filename     string    `json:"filename"` // name of the file on the FS
-	TTL          string    `json:"ttl"`      // time.Duration representing the lifetime of the file.
+	Filename     string    `json:"filename"`   // name of the file on the FS
+	Delete       string    `json:"delete"`     // ID to hit on the delete route to delete the file.
+	TTL          string    `json:"ttl"`        // time.Duration representing the lifetime of the file.
+	DeleteKey    string    `json:"delete_key"` // The key to delete this file.
 	CreationTime time.Time `json:"creation_time"`
 }

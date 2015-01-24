@@ -95,10 +95,20 @@ func (s *Server) prepareRouter() *mux.Router {
 	r := mux.NewRouter()
 
 	sendHandler := &SendHandler{s}
-	r.Handle(s.Flags.Route+"/api/send", sendHandler)
+	r.Handle(s.Flags.Route+"/1.0/send", sendHandler)
+
+	deleteHandler := &DeleteHandler{s}
+	r.Handle(s.Flags.Route+"/{file}/{key}", deleteHandler)
 
 	sh := &ServingHandler{s}
 	r.Handle(s.Flags.Route+"/{file}", sh) // Serving route.
 
 	return r
+}
+
+// Expire expires a file : delete it from the metadata
+// and from the FS.
+func (s *Server) Expire(m Metadata) error {
+	delete(s.Metadata.Data, m.Filename)
+	return os.Remove(s.Flags.OutputDirectory + "/" + m.Filename)
 }

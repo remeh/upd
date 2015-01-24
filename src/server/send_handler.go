@@ -1,6 +1,8 @@
 package server
 
 import (
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -11,6 +13,13 @@ import (
 
 type SendHandler struct {
 	Server *Server // pointer to the started server
+}
+
+// Json returned to the client
+type SendResponse struct {
+	Name         string `json:"name"`
+	DeleteKey    string `json:"delete_key"`
+	DeletionTime string `json:"availaible_until"`
 }
 
 const (
@@ -51,16 +60,44 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var ttl string
 	if len(r.Form["ttl"]) > 0 {
 		ttl = r.Form["ttl"][0]
+		// check that the value is a correct duration
+		_, err := time.ParseDuration(ttl)
+		if err != nil {
+			w.WriteHeader(400)
+			return
+		}
 	}
 
 	// add to metadata
-	s.addMetadata(name, ttl)
-	s.Server.writeMetadata() // TODO do it regularly instead of one big time.
+	now := time.Now()
+	deleteKey := s.randomString(16)
+	s.addMetadata(name, ttl, deleteKey, now)
+	s.Server.writeMetadata() // TODO do it regularly instead of here.
 
-	w.Write([]byte(name))
+	// encode the response json
+	response := SendResponse{
+		Name:         name,
+		DeleteKey:    deleteKey,
+		DeletionTime: s.computeEndOfLife(ttl, now),
+	}
+
+	resp, _ := json.Marshal(response)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(resp)
 }
 
-// TODO less ugly
+// computeEndOfLife return as a string the end of life of the new file.
+func (s *SendHandler) computeEndOfLife(ttl string, now time.Time) string {
+	if len(ttl) == 0 {
+		return "Forever."
+	}
+	duration, _ := time.ParseDuration(ttl) // no error possible 'cause already checked in the controller
+	t := now.Add(duration)
+	return fmt.Sprintf("%s\n", t)
+}
+
+// randomString generates a random valid URL string of the given size
 func (s *SendHandler) randomString(size int) string {
 	result := ""
 
@@ -71,15 +108,19 @@ func (s *SendHandler) randomString(size int) string {
 	return result
 }
 
-func (s *SendHandler) addMetadata(name string, ttl string) {
+// addMetadata adds the given entry to the Server metadata information.
+func (s *SendHandler) addMetadata(name string, ttl string, key string, now time.Time) {
 	metadata := Metadata{
 		Filename:     name,
 		TTL:          ttl,
-		CreationTime: time.Now(),
+		DeleteKey:    key,
+		CreationTime: now,
 	}
 	s.Server.Metadata.Data[name] = metadata
 }
 
+// writeFile uses the Server flags to save the given data as a file
+// on the FS.
 func (s *SendHandler) writeFile(filename string, data []byte) error {
 	file, err := os.Create(s.Server.Flags.OutputDirectory + "/" + filename)
 	if err != nil {
