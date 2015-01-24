@@ -37,7 +37,7 @@ gom build bin/server/server.go
 ./server
 ```
 
-Available flags:
+Available flags for the `server` executable:
 
 ```
 -addr=":9000": The address to listen to with the server.
@@ -57,9 +57,16 @@ gom build bin/client/client.go
 ./client file1 file2 file3 ...
 ```
 
-it'll return the URL to share/delete the uploaded files.
+it'll return the URL to share/delete the uploaded files. Example:
+```
+$ ./client --keep -ttl=4h README.md
+For file : README.md
+URL: http://localhost:9000/clioud/README.md
+Delete URL: http://localhost:9000/clioud/README.md/ytGsotfcIUuZZ6eL
+Available until: 2015-01-24 23:01:18.452801595 +0100 CET
+```
 
-Available flags:
+Available flags for the `client` executable:
 
 ```
 -ca="none": For HTTPS support: none / filename of an accepted CA / unsafe (doesn't check the CA)
