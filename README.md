@@ -10,6 +10,7 @@ Upload from CLI, share with browsers.
     * Keepname option
     * TTL option
   * Secret key
+  * Cache on serving with sync.Pool
   * TTL
   * Delete link
   * TLS
