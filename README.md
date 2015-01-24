@@ -12,7 +12,7 @@ First, you need to use the excellent dependency system gom:
 go get github.com/mattn/gom
 ```
 
-Then, in the main directory:
+Then, in the main directory of `clioud`
 
 ```
 gom install
@@ -60,8 +60,8 @@ Available flags:
   * Daemon listening for files *[ok]*
   * Daemon serving files *[ok]*
   * Client uploading files *[ok]*
-    * Keepname option
-    * TTL option [*ok*]
+    * Keepname option *[ok]*
+    * TTL option *[ok]*
   * Secret key *[ok]*
   * TTL *[ok]*
   * Delete link *[ok]*

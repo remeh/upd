@@ -24,6 +24,7 @@ func parseFlags() (client.Flags, error) {
 	flag.StringVar(&(flags.ServerUrl), "url", "http://localhost:9000/clioud", "The server to contact")
 	flag.StringVar(&(flags.SecretKey), "key", "", "The secret key to identify the client.")
 	flag.StringVar(&(flags.TTL), "ttl", "", "TTL after which the file expires")
+	flag.BoolVar(&(flags.Keepname), "keep", false, "Whether or not we must keep the filename")
 
 	// Read them
 	flag.Parse()

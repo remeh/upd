@@ -60,13 +60,19 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// write the file in the directory
 	name := ""
-	for {
-		name = s.randomString(8)
-		if s.Server.Metadata.Data[name].Filename == "" {
-			break
+
+	// name
+	if len(r.Form["name"]) > 0 {
+		name = r.Form["name"][0]
+	} else {
+		for {
+			name = s.randomString(8)
+			if s.Server.Metadata.Data[name].Filename == "" {
+				break
+			}
 		}
+		s.writeFile(name, data)
 	}
-	s.writeFile(name, data)
 
 	// reads the TTL
 	var ttl string

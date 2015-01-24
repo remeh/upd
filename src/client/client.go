@@ -12,7 +12,9 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"os"
+	"path/filepath"
 
 	"server"
 )
@@ -63,12 +65,20 @@ func (c *Client) sendData(filename string, data []byte) error {
 
 	// create the request
 	client := http.Client{}
-	url := c.Flags.ServerUrl + "/1.0/send"
+	uri := c.Flags.ServerUrl + "/1.0/send"
 	if len(c.Flags.TTL) > 0 {
-		url = url + "?ttl=" + c.Flags.TTL
+		uri = uri + "?ttl=" + c.Flags.TTL
+	}
+	if c.Flags.Keepname {
+		if len(c.Flags.TTL) != 0 {
+			uri += "&"
+		} else {
+			uri += "?"
+		}
+		uri += "name=" + url.QueryEscape(filepath.Base(filename))
 	}
 
-	req, err := http.NewRequest("POST", url, body)
+	req, err := http.NewRequest("POST", uri, body)
 	req.Header.Add("Content-Type", writer.FormDataContentType())
 	if err != nil {
 		log.Println("[err] Unable to create the request to send the file.")
