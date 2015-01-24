@@ -4,7 +4,7 @@ Upload from CLI, share with browsers.
 
 ## About
 
-It's the Rémy 'remeh' Mathieu's entry to the first GopherGala, 2015.
+Clioud is the Rémy 'remeh' Mathieu's entry to the first GopherGala, 2015.
 
 A client/server to upload and share files through http(s), with support of files auto-destruction with TTL.
 
