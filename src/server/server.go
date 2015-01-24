@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"time"
@@ -20,6 +21,9 @@ type Server struct {
 }
 
 func NewServer(flags Flags) *Server {
+	// init the random
+	rand.Seed(time.Now().Unix())
+
 	return &Server{
 		Flags:    flags,
 		Metadata: Metadatas{CreationTime: time.Now(), Data: make(map[string]Metadata)},
@@ -85,12 +89,6 @@ func (s *Server) writeMetadata() {
 	file.Write(data)
 	file.Close()
 
-	s.Metadata.Data["ABCDEF"] = Metadata{
-		"ABCDEF",
-		"ABCDEF",
-		time.Now(),
-	}
-
 	log.Printf("[info] %d metadatas written.\n", len(s.Metadata.Data))
 }
 
@@ -98,7 +96,11 @@ func (s *Server) writeMetadata() {
 func (s *Server) prepareRouter() *mux.Router {
 	r := mux.NewRouter()
 
+	sendHandler := &SendHandler{s}
+	r.Handle(s.Flags.Route+"/api/send", sendHandler)
+
 	sh := &ServingHandler{s}
 	r.Handle(s.Flags.Route+"/{file}", sh) // Serving route.
+
 	return r
 }

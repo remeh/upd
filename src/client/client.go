@@ -6,7 +6,10 @@ package client
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 )
@@ -27,18 +30,47 @@ func (c *Client) Send(filename string) error {
 		return err
 	}
 
-	// and now to send it the server
+	// and now to send it the servee
 	return c.sendData(filename, data)
 }
 
 // sendData sends the data to the clioud server.
 func (c *Client) sendData(filename string, data []byte) error {
-	body := bytes.NewReader(data)
+	// Prepare the multipart content
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
 
-	contentType := http.DetectContentType(data)
-
-	resp, err := http.Post(c.Flags.ServerUrl+"/send", contentType, body)
+	part, err := writer.CreateFormFile("data", "file")
 	if err != nil {
+		log.Println("[err] Unable to prepare the multipart content (CreateFormFile)")
+		return err
+	}
+
+	_, err = io.Copy(part, bytes.NewReader(data))
+	if err != nil {
+		log.Println("[err] Unable to prepare the multipart content (Copy)")
+		return err
+	}
+
+	err = writer.Close()
+	if err != nil {
+		log.Println("[err] Unable to prepare the multipart content (Close)")
+		return err
+	}
+
+	// create the request
+	client := http.Client{}
+	req, err := http.NewRequest("POST", c.Flags.ServerUrl+"/api/send", body)
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+	if err != nil {
+		log.Println("[err] Unable to create the request to send the file.")
+		return err
+	}
+
+	// execute
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("[err] Unable to execut the request to send the file.")
 		return err
 	}
 
@@ -46,6 +78,16 @@ func (c *Client) sendData(filename string, data []byte) error {
 		return fmt.Errorf("Received a %d while sending: %s", resp.StatusCode, filename)
 	}
 
+	// read the name given by the server
+	defer resp.Body.Close()
+	readBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("[err] Unable to read the name given by the server.")
+		return err
+	}
+	name := string(readBody)
+
+	fmt.Println(c.Flags.ServerUrl + "/" + name)
 	return nil
 }
 
