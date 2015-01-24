@@ -12,7 +12,7 @@ type Metadatas struct {
 }
 
 type Metadata struct {
-	Filename     string // name of the file on the FS
-	RealFilename string // Origin filename
-	CreationTime time.Time
+	Filename     string    `json:"filename"`      // name of the file on the FS
+	RealFilename string    `json:"real_filename"` // Origin filename
+	CreationTime time.Time `json:"creation_time"`
 }

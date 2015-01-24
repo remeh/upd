@@ -36,6 +36,6 @@ func parseFlags() server.Flags {
 func main() {
 	flags := parseFlags()
 
-	app := server.Server{Flags: flags}
+	app := server.NewServer(flags)
 	app.Start()
 }
