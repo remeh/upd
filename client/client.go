@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"time"
 
 	"client"
 )
@@ -16,12 +17,13 @@ import (
 type Client struct {
 }
 
-func parseFlags() client.Flags {
+func parseFlags() (client.Flags, error) {
 	var flags client.Flags
 
 	// Declare the flags
-	flag.StringVar(&(flags.ServerUrl), "url", "http://localhost:9000/files", "The server to contact")
+	flag.StringVar(&(flags.ServerUrl), "url", "http://localhost:9000/clioud", "The server to contact")
 	flag.StringVar(&(flags.SecretKey), "key", "", "The secret key to identify the client.")
+	flag.StringVar(&(flags.TTL), "ttl", "", "TTL after which the file expires")
 
 	// Read them
 	flag.Parse()
@@ -31,7 +33,13 @@ func parseFlags() client.Flags {
 		flags.ServerUrl = flags.ServerUrl[:len(flags.ServerUrl)-1]
 	}
 
-	return flags
+	// checks that the given ttl is correct
+	_, err := time.ParseDuration(flags.TTL)
+	if err != nil {
+		return flags, err
+	}
+
+	return flags, nil
 }
 
 // sendFile uses the client to send the data to the clioud server.
@@ -46,11 +54,14 @@ func sendFile(wg *sync.WaitGroup, client *client.Client, filename string) {
 }
 
 func main() {
-	flags := parseFlags()
+	flags, err := parseFlags()
+	if err != nil {
+		fmt.Println(`Wrong duration format, it should be such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"`)
+	}
 
 	// Looks for the file to send
 	// TODO directory
-	if len(os.Args) == 1 {
+	if len(flag.Args()) < 1 {
 		fmt.Printf("Usage: %s [flags] file1 file2\n", os.Args[0])
 		flag.PrintDefaults()
 	}
@@ -59,7 +70,7 @@ func main() {
 
 	var wg sync.WaitGroup
 	// Send each file.
-	for _, filename := range os.Args[1:] {
+	for _, filename := range flag.Args() {
 		wg.Add(1)
 		go sendFile(&wg, c, filename)
 	}

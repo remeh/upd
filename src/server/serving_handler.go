@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -37,6 +38,27 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Existing, serve the file !
 
+	// but first, check that it hasn't expired
+	if entry.TTL != "" {
+		duration, _ := time.ParseDuration(entry.TTL)
+		now := time.Now()
+		fileEndlife := entry.CreationTime.Add(duration)
+		if fileEndlife.Before(now) {
+			// No longer alive!
+			err := s.expire(entry)
+			if err != nil {
+				log.Println("[warn] While deleting file:", entry.Filename)
+				log.Println(err)
+			} else {
+				log.Println("[info] Deleted due to TTL:", entry.Filename)
+				s.Server.writeMetadata()
+			}
+
+			w.WriteHeader(404)
+			return
+		}
+	}
+
 	// read it
 	file, err := os.Open(s.Server.Flags.OutputDirectory + "/" + entry.Filename)
 	if err != nil {
@@ -56,4 +78,9 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	contentType := http.DetectContentType(data)
 	w.Header().Set("Content-Type", contentType)
 	w.Write(data)
+}
+
+func (s *ServingHandler) expire(m Metadata) error {
+	delete(s.Server.Metadata.Data, m.Filename)
+	return os.Remove(s.Server.Flags.OutputDirectory + "/" + m.Filename)
 }

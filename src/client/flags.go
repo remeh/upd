@@ -7,4 +7,5 @@ package client
 type Flags struct {
 	ServerUrl string // Address to send to
 	SecretKey string // Secret between the client and the server
+	TTL       string // when a ttl is given for a file
 }

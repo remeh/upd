@@ -38,11 +38,23 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// write the file in the directory
-	name := s.randomString(8)
+	name := ""
+	for {
+		name = s.randomString(8)
+		if s.Server.Metadata.Data[name].Filename == "" {
+			break
+		}
+	}
 	s.writeFile(name, data)
 
+	// reads the TTL
+	var ttl string
+	if len(r.Form["ttl"]) > 0 {
+		ttl = r.Form["ttl"][0]
+	}
+
 	// add to metadata
-	s.addMetadata(name)
+	s.addMetadata(name, ttl)
 	s.Server.writeMetadata() // TODO do it regularly instead of one big time.
 
 	w.Write([]byte(name))
@@ -59,9 +71,10 @@ func (s *SendHandler) randomString(size int) string {
 	return result
 }
 
-func (s *SendHandler) addMetadata(name string) {
+func (s *SendHandler) addMetadata(name string, ttl string) {
 	metadata := Metadata{
 		Filename:     name,
+		TTL:          ttl,
 		CreationTime: time.Now(),
 	}
 	s.Server.Metadata.Data[name] = metadata

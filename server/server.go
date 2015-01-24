@@ -17,7 +17,7 @@ func parseFlags() server.Flags {
 	flag.StringVar(&(flags.Addr), "addr", ":9000", "The address to listen to with the server.")
 	flag.StringVar(&(flags.SecretKey), "key", "", "The secret key to identify the client.")
 	flag.StringVar(&(flags.OutputDirectory), "out", "./", "Directory in which the server can write the data.")
-	flag.StringVar(&(flags.Route), "route", "/files", "Route served by the server.")
+	flag.StringVar(&(flags.Route), "route", "/clioud", "Route served by the server.")
 
 	// Read them
 	flag.Parse()

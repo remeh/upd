@@ -13,5 +13,6 @@ type Metadatas struct {
 
 type Metadata struct {
 	Filename     string    `json:"filename"` // name of the file on the FS
+	TTL          string    `json:"ttl"`      // time.Duration representing the lifetime of the file.
 	CreationTime time.Time `json:"creation_time"`
 }

@@ -74,8 +74,6 @@ func (s *Server) readMetadata() {
 		log.Printf("[info] %d metadata read.\n", len(s.Metadata.Data))
 		file.Close()
 	}
-
-	s.writeMetadata()
 }
 
 func (s *Server) writeMetadata() {

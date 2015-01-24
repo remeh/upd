@@ -60,7 +60,12 @@ func (c *Client) sendData(filename string, data []byte) error {
 
 	// create the request
 	client := http.Client{}
-	req, err := http.NewRequest("POST", c.Flags.ServerUrl+"/api/send", body)
+	url := c.Flags.ServerUrl + "/api/send"
+	if len(c.Flags.TTL) > 0 {
+		url = url + "?ttl=" + c.Flags.TTL
+	}
+
+	req, err := http.NewRequest("POST", url, body)
 	req.Header.Add("Content-Type", writer.FormDataContentType())
 	if err != nil {
 		log.Println("[err] Unable to create the request to send the file.")
