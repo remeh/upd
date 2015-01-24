@@ -4,8 +4,10 @@
 package server
 
 import (
-	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 )
@@ -27,11 +29,31 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Existing file ?
-	if s.Server.Metadata.Data[id].Filename == "" {
+	entry := s.Server.Metadata.Data[id]
+	if entry.Filename == "" {
 		w.WriteHeader(404)
 		return
 	}
 
 	// Existing, serve the file !
 
+	// read it
+	file, err := os.Open(s.Server.Flags.OutputDirectory + "/" + entry.Filename)
+	if err != nil {
+		w.WriteHeader(500)
+		log.Println("[err] While requesting:", entry.Filename)
+		log.Println(err)
+		return
+	}
+
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		w.WriteHeader(500)
+		log.Println("[err] While reading:", entry.Filename)
+		log.Println(err)
+	}
+
+	contentType := http.DetectContentType(data)
+	w.Header().Set("Content-Type", contentType)
+	w.Write(data)
 }
