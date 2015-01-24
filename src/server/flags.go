@@ -1,4 +1,4 @@
-// Server executable to receive/host files.
+// Server flags.
 // Copyright © 2015 - Rémy MATHIEU
 
 package server
