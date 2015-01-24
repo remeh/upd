@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -63,7 +64,13 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// name
 	if len(r.Form["name"]) > 0 {
-		name = r.Form["name"][0]
+		name = filepath.Base(r.Form["name"][0])
+		// Reserved name.
+		if name == "metadata.json" {
+			w.WriteHeader(400)
+			w.Write([]byte("'metadata.json' : reserved name."))
+			return
+		}
 	} else {
 		for {
 			name = s.randomString(8)
