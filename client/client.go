@@ -25,6 +25,7 @@ func parseFlags() (client.Flags, error) {
 	flag.StringVar(&(flags.SecretKey), "key", "", "The secret key to identify the client.")
 	flag.StringVar(&(flags.TTL), "ttl", "", "TTL after which the file expires")
 	flag.BoolVar(&(flags.Keepname), "keep", false, "Whether or not we must keep the filename")
+	flag.StringVar(&(flags.CA), "ca", "none", "Values: none / filename of an accepted CA / unsafe (doesn't check the CA)")
 
 	// Read them
 	flag.Parse()

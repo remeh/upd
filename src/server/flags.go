@@ -9,4 +9,6 @@ type Flags struct {
 	SecretKey       string // Secret between the client and the server
 	OutputDirectory string // Where the server can write the files.
 	Route           string // Route served by the webserver
+	CertificateFile string // Filepath to an tls certificate
+	CertificateKey  string // Filepath to the key part of a certificate
 }
