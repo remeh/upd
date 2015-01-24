@@ -65,7 +65,7 @@ Available flags:
 -ca="none": For HTTPS support: none / filename of an accepted CA / unsafe (doesn't check the CA)
 -keep=false: Whether or not we must keep the filename
 -key="": A shared secret key to identify the client.
--ttl="": TTL after which the file expires. 
+-ttl="": TTL after which the file expires, ex: 30m. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"
 -url="http://localhost:9000/clioud": The server to contact.
 ```
 
