@@ -78,8 +78,10 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 		}
-		s.writeFile(name, data)
 	}
+
+	// writes the data on the disk
+	s.writeFile(name, data)
 
 	// reads the TTL
 	var ttl string
