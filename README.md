@@ -76,7 +76,7 @@ Available flags for the `client` executable:
 -url="http://localhost:9000/clioud": The server to contact.
 ```
 
-## Roadmap
+## Features
 
   * Daemon listening for files *[ok]*
   * Daemon serving files *[ok]*
@@ -88,3 +88,8 @@ Available flags for the `client` executable:
   * Delete link *[ok]*
   * HTTPs *[ok]*
 
+## Todo
+
+  * Routine job cleaning the expired files
+  * Server API for clients :
+    * Last updated
