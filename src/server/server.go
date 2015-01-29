@@ -105,6 +105,9 @@ func (s *Server) prepareRouter() *mux.Router {
 	sendHandler := &SendHandler{s}
 	r.Handle(s.Flags.Route+"/1.0/send", sendHandler)
 
+	lastUploadeHanlder := &LastUploadedHandler{s}
+	r.Handle(s.Flags.Route+"/1.0/list", lastUploadeHanlder)
+
 	deleteHandler := &DeleteHandler{s}
 	r.Handle(s.Flags.Route+"/{file}/{key}", deleteHandler)
 
