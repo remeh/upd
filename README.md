@@ -87,9 +87,8 @@ Available flags for the `client` executable:
   * TTL *[ok]*
   * Delete link *[ok]*
   * HTTPs *[ok]*
+  * Get last uploaded *[ok]*
 
 ## Todo
 
   * Routine job cleaning the expired files
-  * Server API for clients :
-    * Last updated
