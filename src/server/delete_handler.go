@@ -49,7 +49,7 @@ func (s *DeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Re-save the metadata
-	s.Server.writeMetadata()
+	s.Server.writeMetadata(true)
 
 	w.WriteHeader(200)
 	w.Write([]byte("File deleted."))

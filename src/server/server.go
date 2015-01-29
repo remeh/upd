@@ -40,8 +40,9 @@ func (s *Server) Start() {
 	// Read the existing metadata.
 	s.readMetadata()
 
-	// Listen
+	go s.StartCleanJob()
 
+	// Listen
 	if len(s.Flags.CertificateFile) != 0 && len(s.Flags.CertificateKey) != 0 {
 		log.Println("[info] Start secure listening on", s.Flags.Addr)
 		err := http.ListenAndServeTLS(s.Flags.Addr, s.Flags.CertificateFile, s.Flags.CertificateKey, nil)
@@ -50,6 +51,15 @@ func (s *Server) Start() {
 		log.Println("[info] Start listening on", s.Flags.Addr)
 		err := http.ListenAndServe(s.Flags.Addr, nil)
 		log.Println("[err]", err.Error())
+	}
+}
+
+// Starts the Clean Job
+func (s *Server) StartCleanJob() {
+	timer := time.NewTicker(60 * time.Second)
+	for _ = range timer.C {
+		job := CleanJob{s}
+		job.Run()
 	}
 }
 
@@ -64,7 +74,7 @@ func (s *Server) readMetadata() {
 	if create {
 		// Create the file
 		log.Println("[info] Creating metadata.json")
-		s.writeMetadata()
+		s.writeMetadata(true)
 	} else {
 		// Read the file
 		log.Println("[info] Reading metadata.json")
@@ -84,7 +94,8 @@ func (s *Server) readMetadata() {
 	}
 }
 
-func (s *Server) writeMetadata() {
+func (s *Server) writeMetadata(printLog bool) {
+	// TODO mutex!!
 	file, err := os.Create(s.Flags.OutputDirectory + "/metadata.json")
 	if err != nil {
 		log.Println("[err] Can't write in the output directory:", s.Flags.OutputDirectory)
@@ -95,7 +106,9 @@ func (s *Server) writeMetadata() {
 	file.Write(data)
 	file.Close()
 
-	log.Printf("[info] %d metadatas written.\n", len(s.Metadata.Data))
+	if printLog {
+		log.Printf("[info] %d metadatas written.\n", len(s.Metadata.Data))
+	}
 }
 
 // Prepares the route

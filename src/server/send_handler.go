@@ -101,7 +101,7 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	deleteKey := s.randomString(16)
 	s.addMetadata(name, ttl, deleteKey, now)
-	s.Server.writeMetadata() // TODO do it regularly instead of here.
+	s.Server.writeMetadata(true) // TODO do it regularly instead of here.
 
 	// encode the response json
 	response := SendResponse{
