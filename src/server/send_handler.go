@@ -1,3 +1,5 @@
+// Route receiving the data when a file is uploaded.
+// Copyright © 2015 - Rémy MATHIEU
 package server
 
 import (
@@ -17,7 +19,7 @@ type SendHandler struct {
 }
 
 const (
-	SECRET_KEY_HEADER = "X-Cloudia-Key"
+	SECRET_KEY_HEADER = "X-Clioud-Key"
 )
 
 // Json returned to the client
@@ -99,7 +101,7 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	deleteKey := s.randomString(16)
 	s.addMetadata(name, ttl, deleteKey, now)
-	s.Server.writeMetadata() // TODO do it regularly instead of here.
+	s.Server.writeMetadata(true) // TODO do it regularly instead of here.
 
 	// encode the response json
 	response := SendResponse{
@@ -144,6 +146,15 @@ func (s *SendHandler) addMetadata(name string, ttl string, key string, now time.
 		CreationTime: now,
 	}
 	s.Server.Metadata.Data[name] = metadata
+
+	// add the entry
+	s.Server.Metadata.LastUploaded = append([]string{name}, s.Server.Metadata.LastUploaded...)
+	// keep only 20 entries
+	limitMax := 19
+	if len(s.Server.Metadata.LastUploaded) < limitMax {
+		limitMax = len(s.Server.Metadata.LastUploaded)
+	}
+	s.Server.Metadata.LastUploaded = s.Server.Metadata.LastUploaded[0:limitMax]
 }
 
 // writeFile uses the Server flags to save the given data as a file

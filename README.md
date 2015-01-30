@@ -76,15 +76,17 @@ Available flags for the `client` executable:
 -url="http://localhost:9000/upd": The server to contact.
 ```
 
-## Roadmap
+## Features
 
-  * Daemon listening for files *[ok]*
-  * Daemon serving files *[ok]*
-  * Client uploading files *[ok]*
-    * Keepname option *[ok]*
-    * TTL option *[ok]*
-  * Secret key *[ok]*
-  * TTL *[ok]*
-  * Delete link *[ok]*
-  * HTTPs *[ok]*
+  * Daemon listening for files 
+  * Daemon serving files 
+  * Client uploading files 
+    * Keepname option 
+    * TTL option 
+  * Secret key 
+  * TTL 
+  * Delete link 
+  * HTTPs 
+  * Get last uploaded 
+  * Routine job cleaning the expired files
 

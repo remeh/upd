@@ -51,7 +51,7 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				log.Println(err)
 			} else {
 				log.Println("[info] Deleted due to TTL:", entry.Filename)
-				s.Server.writeMetadata()
+				s.Server.writeMetadata(true)
 			}
 
 			w.WriteHeader(404)
