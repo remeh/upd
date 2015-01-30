@@ -21,6 +21,10 @@ import (
 	"server"
 )
 
+const (
+	ROUTE_SEND = "/1.0/send"
+)
+
 type Client struct {
 	Flags Flags
 }
@@ -39,30 +43,6 @@ func (c *Client) Send(filename string) error {
 
 	// and now to send it the servee
 	return c.sendData(filename, data)
-}
-
-func (c *Client) createClient() *http.Client {
-	if c.Flags.CA == "unsafe" {
-		tr := &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		}
-		return &http.Client{Transport: tr}
-	} else if len(c.Flags.CA) > 0 && c.Flags.CA != "none" {
-		// reads the CA
-		certs := x509.NewCertPool()
-		pemData, err := ioutil.ReadFile(c.Flags.CA)
-		if err != nil {
-			log.Println("[err] Can't read the CA.")
-		}
-		certs.AppendCertsFromPEM(pemData)
-		tr := &http.Transport{
-			TLSClientConfig: &tls.Config{RootCAs: certs},
-		}
-		return &http.Client{Transport: tr}
-	}
-
-	// No HTTPS support
-	return &http.Client{}
 }
 
 // sendData sends the data to the upd server.
@@ -90,9 +70,9 @@ func (c *Client) sendData(filename string, data []byte) error {
 	}
 
 	// create the request
-	client := c.createClient()
+	client := &http.Client{}
 
-	uri := c.Flags.ServerUrl + "/1.0/send"
+	uri := c.Flags.ServerUrl + ROUTE_SEND
 	if len(c.Flags.TTL) > 0 {
 		uri = uri + "?ttl=" + c.Flags.TTL
 	}

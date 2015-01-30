@@ -62,18 +62,23 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// write the file in the directory
-	name := ""
+	var name string
+	var original string
 
 	// name
 	if len(r.Form["name"]) > 0 {
 		name = filepath.Base(r.Form["name"][0])
+		original = name
 		// Reserved name.
 		if name == "metadata.json" {
 			w.WriteHeader(400)
 			w.Write([]byte("'metadata.json' : reserved name."))
 			return
 		}
-	} else {
+	}
+
+	// do we keep the original name of the file ?
+	if r.Form["keep"] != "1" {
 		for {
 			name = s.randomString(8)
 			if s.Server.Metadata.Data[name].Filename == "" {
@@ -83,7 +88,7 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// writes the data on the disk
-	s.writeFile(name, data)
+	s.writeFile(name, original, data)
 
 	// reads the TTL
 	var ttl string
@@ -100,7 +105,7 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// add to metadata
 	now := time.Now()
 	deleteKey := s.randomString(16)
-	s.addMetadata(name, ttl, deleteKey, now)
+	s.addMetadata(name, original, ttl, deleteKey, now)
 	s.Server.writeMetadata(true) // TODO do it regularly instead of here.
 
 	// encode the response json
@@ -138,9 +143,10 @@ func (s *SendHandler) randomString(size int) string {
 }
 
 // addMetadata adds the given entry to the Server metadata information.
-func (s *SendHandler) addMetadata(name string, ttl string, key string, now time.Time) {
+func (s *SendHandler) addMetadata(name string, original string, ttl string, key string, now time.Time) {
 	metadata := Metadata{
 		Filename:     name,
+		Original:     original,
 		TTL:          ttl,
 		DeleteKey:    key,
 		CreationTime: now,
