@@ -13,6 +13,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const (
+	HEADER_ORIGINAL_FILENAME = "X-Upd-Orig-Filename"
+)
+
 type ServingHandler struct {
 	Server *Server // pointer to the started server
 }
@@ -77,5 +81,6 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	contentType := http.DetectContentType(data)
 	w.Header().Set("Content-Type", contentType)
+	w.Header().Set(HEADER_ORIGINAL_FILENAME, entry.Original)
 	w.Write(data)
 }
