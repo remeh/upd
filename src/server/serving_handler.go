@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -82,5 +83,6 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	contentType := http.DetectContentType(data)
 	w.Header().Set("Content-Type", contentType)
 	w.Header().Set(HEADER_ORIGINAL_FILENAME, entry.Original)
+	w.Header().Set("Content-Disposition", "inline; filename*=UTF-8''"+url.QueryEscape(entry.Original))
 	w.Write(data)
 }
