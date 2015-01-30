@@ -65,20 +65,7 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// read it
-	file, err := os.Open(s.Server.Flags.OutputDirectory + "/" + entry.Filename)
-	if err != nil {
-		w.WriteHeader(500)
-		log.Println("[err] While requesting:", entry.Filename)
-		log.Println(err)
-		return
-	}
-
-	data, err := ioutil.ReadAll(file)
-	if err != nil {
-		w.WriteHeader(500)
-		log.Println("[err] While reading:", entry.Filename)
-		log.Println(err)
-	}
+	data, err := readFile(s.Server.Flags, entry.Filename)
 
 	contentType := http.DetectContentType(data)
 	w.Header().Set("Content-Type", contentType)

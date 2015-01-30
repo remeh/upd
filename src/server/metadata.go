@@ -13,9 +13,16 @@ type Metadatas struct {
 }
 
 type Metadata struct {
-	Original     string    `json:"original"`   // original name of the file.
-	Filename     string    `json:"filename"`   // name of the file on the FS
-	TTL          string    `json:"ttl"`        // time.Duration representing the lifetime of the file.
-	DeleteKey    string    `json:"delete_key"` // The key to delete this file.
-	CreationTime time.Time `json:"creation_time"`
+	Original     string       `json:"original"`      // original name of the file.
+	Filename     string       `json:"filename"`      // name of the file on the FS
+	TTL          string       `json:"ttl"`           // time.Duration representing the lifetime of the file.
+	DeleteKey    string       `json:"delete_key"`    // The key to delete this file.
+	BackendInfos BackendInfos `json:"backend_infos"` // The used backend
+	CreationTime time.Time    `json:"creation_time"`
+}
+
+// When wrote on a backend (S3, GCS), we'll need some more info.
+type BackendInfos struct {
+	Type   string // possible values : s3
+	Bucket string // used by : s3
 }

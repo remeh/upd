@@ -9,7 +9,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"os"
 	"path/filepath"
 	"time"
 )
@@ -80,8 +79,8 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// writes the data on the disk
-	s.writeFile(name, data)
+	// writes the data on the storage backend
+	writeFile(s.Server.Flags, name, data)
 
 	// reads the TTL
 	var ttl string
@@ -155,28 +154,4 @@ func (s *SendHandler) addMetadata(name string, original string, ttl string, key 
 		limitMax = len(s.Server.Metadata.LastUploaded)
 	}
 	s.Server.Metadata.LastUploaded = s.Server.Metadata.LastUploaded[0:limitMax]
-}
-
-// writeFile uses the Server flags to save the given data as a file
-// on the FS.
-func (s *SendHandler) writeFile(filename string, data []byte) error {
-	file, err := os.Create(s.Server.Flags.OutputDirectory + "/" + filename)
-	if err != nil {
-		log.Println("[err] Can't create the file to write: ", filename)
-		return err
-	}
-
-	_, err = file.Write(data)
-	if err != nil {
-		log.Println("[err] Can't write the file to write: ", filename)
-		return err
-	}
-
-	err = file.Close()
-	if err != nil {
-		log.Println("[err] Can't close the file to write: ", filename)
-		return err
-	}
-
-	return nil
 }
