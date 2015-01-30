@@ -5,8 +5,6 @@ package client
 
 import (
 	"bytes"
-	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -16,7 +14,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path/filepath"
 
 	"server"
 )
@@ -73,17 +70,12 @@ func (c *Client) sendData(filename string, data []byte) error {
 	client := &http.Client{}
 
 	uri := c.Flags.ServerUrl + ROUTE_SEND
-	if len(c.Flags.TTL) > 0 {
-		uri = uri + "?ttl=" + c.Flags.TTL
-	}
-	if c.Flags.Keepname {
-		if len(c.Flags.TTL) != 0 {
-			uri += "&"
-		} else {
-			uri += "?"
-		}
-		uri += "name=" + url.QueryEscape(filepath.Base(filename))
-	}
+
+	params := make(map[string]string)
+	params["ttl"] = c.Flags.TTL
+	params["name"] = filename
+
+	uri = c.buildParams(uri, params)
 
 	req, err := http.NewRequest("POST", uri, body)
 	req.Header.Add("Content-Type", writer.FormDataContentType())
@@ -132,6 +124,32 @@ func (c *Client) sendData(filename string, data []byte) error {
 	fmt.Println("--")
 
 	return nil
+}
+
+// buildParams adds the GET parameters to the given uri.
+func (c *Client) buildParams(uri string, params map[string]string) string {
+	if len(params) == 0 {
+		return uri
+	}
+	atLeastOne := false
+
+	ret := uri
+	ret += "?"
+
+	for k, v := range params {
+		if len(v) > 0 {
+			ret = fmt.Sprintf("%s%s=%s&", ret, k, url.QueryEscape(v))
+			atLeastOne = true
+		}
+	}
+
+	// there were parameters but they're all empty
+	if !atLeastOne {
+		return uri
+	}
+
+	ret = ret[0 : len(ret)-1]
+	return ret
 }
 
 // readFile reads the content of the given file.

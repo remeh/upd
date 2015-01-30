@@ -25,7 +25,6 @@ func parseFlags() (client.Flags, error) {
 	flag.StringVar(&(flags.ServerUrl), "url", "http://localhost:9000/upd", "The server to contact")
 	flag.StringVar(&(flags.SecretKey), "key", "", "A shared secret key to identify the client.")
 	flag.StringVar(&(flags.TTL), "ttl", "", `TTL after which the file expires, ex: 30m. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"`)
-	flag.BoolVar(&(flags.Keepname), "keep", false, "Whether or not we must keep the filename")
 
 	// Read them
 	flag.Parse()

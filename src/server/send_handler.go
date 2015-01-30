@@ -66,29 +66,22 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var original string
 
 	// name
-	if len(r.Form["name"]) > 0 {
-		name = filepath.Base(r.Form["name"][0])
-		original = name
-		// Reserved name.
-		if name == "metadata.json" {
-			w.WriteHeader(400)
-			w.Write([]byte("'metadata.json' : reserved name."))
-			return
-		}
+	if len(r.Form["name"]) == 0 {
+		w.WriteHeader(400)
+		return
+	} else {
+		original = filepath.Base(r.Form["name"][0])
 	}
 
-	// do we keep the original name of the file ?
-	if r.Form["keep"] != "1" {
-		for {
-			name = s.randomString(8)
-			if s.Server.Metadata.Data[name].Filename == "" {
-				break
-			}
+	for {
+		name = s.randomString(8)
+		if s.Server.Metadata.Data[name].Filename == "" {
+			break
 		}
 	}
 
 	// writes the data on the disk
-	s.writeFile(name, original, data)
+	s.writeFile(name, data)
 
 	// reads the TTL
 	var ttl string
@@ -97,6 +90,7 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// check that the value is a correct duration
 		_, err := time.ParseDuration(ttl)
 		if err != nil {
+			println(err.Error())
 			w.WriteHeader(400)
 			return
 		}
