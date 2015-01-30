@@ -1,10 +1,10 @@
-# Clioud
+# upd
 
 Upload from CLI, share with browsers.
 
 ## About
 
-Clioud is the Rémy 'remeh' Mathieu's entry to the first GopherGala, 2015.
+upd is the Rémy 'remeh' Mathieu's entry to the first GopherGala, 2015.
 
 A client/server to upload and share files through http(s), with support of files auto-destruction with TTL.
 
@@ -20,7 +20,7 @@ First, you need to use the excellent dependency system gom:
 go get github.com/mattn/gom
 ```
 
-Then, in the main directory of `clioud`
+Then, in the main directory of `upd`
 
 ```
 gom install
@@ -45,7 +45,7 @@ Available flags for the `server` executable:
 -ckey="": Path to a TLS key file. Ex: ./certs/key.pem
 -key="": A shared secret key to identify the client.
 -out="./": Directory in which the server can write the data.
--route="/clioud": Route served by the server.
+-route="/upd": Route served by the server.
 ```
 
 ### Upload a file with the client
@@ -61,8 +61,8 @@ it'll return the URL to share/delete the uploaded files. Example:
 ```
 $ ./client --keep -ttl=4h README.md
 For file : README.md
-URL: http://localhost:9000/clioud/README.md
-Delete URL: http://localhost:9000/clioud/README.md/ytGsotfcIUuZZ6eL
+URL: http://localhost:9000/upd/README.md
+Delete URL: http://localhost:9000/upd/README.md/ytGsotfcIUuZZ6eL
 Available until: 2015-01-24 23:01:18.452801595 +0100 CET
 ```
 
@@ -73,7 +73,7 @@ Available flags for the `client` executable:
 -keep=false: Whether or not we must keep the filename
 -key="": A shared secret key to identify the client.
 -ttl="": TTL after which the file expires, ex: 30m. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"
--url="http://localhost:9000/clioud": The server to contact.
+-url="http://localhost:9000/upd": The server to contact.
 ```
 
 ## Roadmap

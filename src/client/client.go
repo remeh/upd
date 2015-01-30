@@ -1,4 +1,4 @@
-// Client executable to send file to the clioud daemon.
+// Client executable to send file to the upd daemon.
 // Copyright © 2015 - Rémy MATHIEU
 
 package client
@@ -29,7 +29,7 @@ func NewClient(flags Flags) *Client {
 	return &Client{Flags: flags}
 }
 
-// Send sends the given file to the clioud server.
+// Send sends the given file to the upd server.
 func (c *Client) Send(filename string) error {
 	// first, we need to read the data
 	data, err := c.readFile(filename)
@@ -65,7 +65,7 @@ func (c *Client) createClient() *http.Client {
 	return &http.Client{}
 }
 
-// sendData sends the data to the clioud server.
+// sendData sends the data to the upd server.
 func (c *Client) sendData(filename string, data []byte) error {
 	// Prepare the multipart content
 	body := &bytes.Buffer{}

@@ -1,4 +1,4 @@
-// Client executable to upload data on a clioud daemon.
+// Client executable to upload data on a upd daemon.
 // Copyright © 2015 - Rémy MATHIEU
 
 package main
@@ -22,7 +22,7 @@ func parseFlags() (client.Flags, error) {
 
 	// Declare the flags
 	flag.StringVar(&(flags.CA), "ca", "none", "For HTTPS support: none / filename of an accepted CA / unsafe (doesn't check the CA)")
-	flag.StringVar(&(flags.ServerUrl), "url", "http://localhost:9000/clioud", "The server to contact")
+	flag.StringVar(&(flags.ServerUrl), "url", "http://localhost:9000/upd", "The server to contact")
 	flag.StringVar(&(flags.SecretKey), "key", "", "A shared secret key to identify the client.")
 	flag.StringVar(&(flags.TTL), "ttl", "", `TTL after which the file expires, ex: 30m. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"`)
 	flag.BoolVar(&(flags.Keepname), "keep", false, "Whether or not we must keep the filename")
@@ -46,7 +46,7 @@ func parseFlags() (client.Flags, error) {
 	return flags, nil
 }
 
-// sendFile uses the client to send the data to the clioud server.
+// sendFile uses the client to send the data to the upd server.
 func sendFile(wg *sync.WaitGroup, client *client.Client, filename string) {
 	defer wg.Done()
 
