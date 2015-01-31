@@ -5,6 +5,8 @@ package client
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -42,6 +44,30 @@ func (c *Client) Send(filename string) error {
 	return c.sendData(filename, data)
 }
 
+func (c *Client) createClient() *http.Client {
+	if c.Flags.CA == "unsafe" {
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+		return &http.Client{Transport: tr}
+	} else if len(c.Flags.CA) > 0 && c.Flags.CA != "none" {
+		// reads the CA
+		certs := x509.NewCertPool()
+		pemData, err := ioutil.ReadFile(c.Flags.CA)
+		if err != nil {
+			log.Println("[err] Can't read the CA.")
+		}
+		certs.AppendCertsFromPEM(pemData)
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{RootCAs: certs},
+		}
+		return &http.Client{Transport: tr}
+	}
+
+	// No HTTPS support
+	return &http.Client{}
+}
+
 // sendData sends the data to the upd server.
 func (c *Client) sendData(filename string, data []byte) error {
 	// Prepare the multipart content
@@ -67,7 +93,7 @@ func (c *Client) sendData(filename string, data []byte) error {
 	}
 
 	// create the request
-	client := &http.Client{}
+	client := c.createClient()
 
 	uri := c.Flags.ServerUrl + ROUTE_SEND
 

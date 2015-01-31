@@ -5,32 +5,55 @@ package main
 
 import (
 	"flag"
+	"io/ioutil"
+	"log"
 
 	"server"
+
+	"github.com/BurntSushi/toml"
 )
+
+// readFromFile looks whether a configuration file is provided
+// to read the config into it.
+func readFromFile(filename string) (server.Config, error) {
+	// default hardcoded config when no configuration file is available
+	config := server.Config{
+		Addr:            ":9000",
+		OutputDirectory: "/tmp",
+		Route:           "/upd",
+	}
+
+	// read the file
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return config, err
+	}
+
+	// decode the file
+	_, err = toml.Decode(string(data), &config)
+	if err != nil {
+		return config, err
+	}
+
+	// Ensure the validity of the config // TODO log
+	if config.Route[0] != '/' {
+		config.Route = "/" + config.Route
+	}
+	if config.Route[len(config.Route)-1] == '/' {
+		config.Route = config.Route[:len(config.Route)-1]
+	}
+
+	return config, nil
+}
 
 func parseFlags() server.Flags {
 	var flags server.Flags
 
 	// Declare the flags
-
-	flag.StringVar(&(flags.Addr), "addr", ":9000", "The address to listen to with the server.")
-	flag.StringVar(&(flags.SecretKey), "key", "", "The secret key to identify the client.")
-	flag.StringVar(&(flags.OutputDirectory), "out", "./", "Directory in which the server can write the data.")
-	flag.StringVar(&(flags.Route), "route", "/upd", "Route served by the server.")
-	flag.StringVar(&(flags.CertificateFile), "cfile", "", "Path to a TLS certificate. Ex: ./certs/cert.pem")
-	flag.StringVar(&(flags.CertificateKey), "ckey", "", "Path to a TLS key file. Ex: ./certs/key.pem")
+	flag.StringVar(&(flags.ConfigFile), "c", "upd.conf", "Configuration file to use.")
 
 	// Read them
 	flag.Parse()
-
-	// Ensure the validity of the flags
-	if flags.Route[0] != '/' {
-		flags.Route = "/" + flags.Route
-	}
-	if flags.Route[len(flags.Route)-1] == '/' {
-		flags.Route = flags.Route[:len(flags.Route)-1]
-	}
 
 	return flags
 }
@@ -38,6 +61,12 @@ func parseFlags() server.Flags {
 func main() {
 	flags := parseFlags()
 
-	app := server.NewServer(flags)
+	config, err := readFromFile(flags.ConfigFile)
+	if err != nil {
+		log.Println("[warn] Can't read the configuration file")
+		log.Println("[warn] Falling back on default values for configuration.")
+	}
+
+	app := server.NewServer(config)
 	app.Start()
 }

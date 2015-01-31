@@ -4,11 +4,9 @@
 package server
 
 import (
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -65,7 +63,14 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// read it
-	data, err := readFile(s.Server.Flags, entry.Filename)
+	data, err := readFile(s.Server.Config, entry.Filename)
+
+	if err != nil {
+		log.Println("[err] Can't read the file from the storage.")
+		log.Println(err)
+		w.WriteHeader(500)
+		return
+	}
 
 	contentType := http.DetectContentType(data)
 	w.Header().Set("Content-Type", contentType)

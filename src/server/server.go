@@ -16,16 +16,16 @@ import (
 )
 
 type Server struct {
-	Flags    Flags     // Configuration
+	Config   Config    // Configuration
 	Metadata Metadatas // Link to the read metadata
 }
 
-func NewServer(flags Flags) *Server {
+func NewServer(config Config) *Server {
 	// init the random
 	rand.Seed(time.Now().Unix())
 
 	return &Server{
-		Flags:    flags,
+		Config:   config,
 		Metadata: Metadatas{CreationTime: time.Now(), Data: make(map[string]Metadata)},
 	}
 }
@@ -43,13 +43,13 @@ func (s *Server) Start() {
 	go s.StartCleanJob()
 
 	// Listen
-	if len(s.Flags.CertificateFile) != 0 && len(s.Flags.CertificateKey) != 0 {
-		log.Println("[info] Start secure listening on", s.Flags.Addr)
-		err := http.ListenAndServeTLS(s.Flags.Addr, s.Flags.CertificateFile, s.Flags.CertificateKey, nil)
+	if len(s.Config.CertificateFile) != 0 && len(s.Config.CertificateKey) != 0 {
+		log.Println("[info] Start secure listening on", s.Config.Addr)
+		err := http.ListenAndServeTLS(s.Config.Addr, s.Config.CertificateFile, s.Config.CertificateKey, nil)
 		log.Println("[err]", err.Error())
 	} else {
-		log.Println("[info] Start listening on", s.Flags.Addr)
-		err := http.ListenAndServe(s.Flags.Addr, nil)
+		log.Println("[info] Start listening on", s.Config.Addr)
+		err := http.ListenAndServe(s.Config.Addr, nil)
 		log.Println("[err]", err.Error())
 	}
 }
@@ -65,7 +65,7 @@ func (s *Server) StartCleanJob() {
 
 // Reads the stored metadata.
 func (s *Server) readMetadata() {
-	file, err := os.Open(s.Flags.OutputDirectory + "/metadata.json")
+	file, err := os.Open(s.Config.OutputDirectory + "/metadata.json")
 	create := false
 	if err != nil {
 		create = true
@@ -96,9 +96,9 @@ func (s *Server) readMetadata() {
 
 func (s *Server) writeMetadata(printLog bool) {
 	// TODO mutex!!
-	file, err := os.Create(s.Flags.OutputDirectory + "/metadata.json")
+	file, err := os.Create(s.Config.OutputDirectory + "/metadata.json")
 	if err != nil {
-		log.Println("[err] Can't write in the output directory:", s.Flags.OutputDirectory)
+		log.Println("[err] Can't write in the output directory:", s.Config.OutputDirectory)
 		log.Println(err)
 		os.Exit(1)
 	}
@@ -116,16 +116,16 @@ func (s *Server) prepareRouter() *mux.Router {
 	r := mux.NewRouter()
 
 	sendHandler := &SendHandler{s}
-	r.Handle(s.Flags.Route+"/1.0/send", sendHandler)
+	r.Handle(s.Config.Route+"/1.0/send", sendHandler)
 
 	lastUploadeHanlder := &LastUploadedHandler{s}
-	r.Handle(s.Flags.Route+"/1.0/list", lastUploadeHanlder)
+	r.Handle(s.Config.Route+"/1.0/list", lastUploadeHanlder)
 
 	deleteHandler := &DeleteHandler{s}
-	r.Handle(s.Flags.Route+"/{file}/{key}", deleteHandler)
+	r.Handle(s.Config.Route+"/{file}/{key}", deleteHandler)
 
 	sh := &ServingHandler{s}
-	r.Handle(s.Flags.Route+"/{file}", sh) // Serving route.
+	r.Handle(s.Config.Route+"/{file}", sh) // Serving route.
 
 	return r
 }
@@ -134,5 +134,5 @@ func (s *Server) prepareRouter() *mux.Router {
 // and from the FS.
 func (s *Server) Expire(m Metadata) error {
 	delete(s.Metadata.Data, m.Filename)
-	return os.Remove(s.Flags.OutputDirectory + "/" + m.Filename)
+	return os.Remove(s.Config.OutputDirectory + "/" + m.Filename)
 }

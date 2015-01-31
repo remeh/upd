@@ -36,7 +36,7 @@ const (
 func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// checks the secret key
 	key := r.Header.Get(SECRET_KEY_HEADER)
-	if s.Server.Flags.SecretKey != "" && key != s.Server.Flags.SecretKey {
+	if s.Server.Config.SecretKey != "" && key != s.Server.Config.SecretKey {
 		w.WriteHeader(403)
 		return
 	}
@@ -80,7 +80,7 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// writes the data on the storage backend
-	writeFile(s.Server.Flags, name, data)
+	writeFile(s.Server.Config, name, data)
 
 	// reads the TTL
 	var ttl string

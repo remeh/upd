@@ -4,16 +4,16 @@
 package server
 
 import (
-	"ioutil"
+	"io/ioutil"
 	"log"
 	"os"
 )
 
 // writeFile deals with writing the file, using the flags
 // to know where and the filename / data to store it.
-func writeFile(serverFlags Flags, filename string, data []byte) error {
+func writeFile(config Config, filename string, data []byte) error {
 	// TODO check the backend to use
-	file, err := os.Create(serverFlags.OutputDirectory + "/" + filename)
+	file, err := os.Create(config.OutputDirectory + "/" + filename)
 	if err != nil {
 		log.Println("[err] Can't create the file to write: ", filename)
 		return err
@@ -37,20 +37,16 @@ func writeFile(serverFlags Flags, filename string, data []byte) error {
 // readFile is the method to read the file from wherever it
 // is stored. The serverFlags are used to know where to read,
 // the filename is used to know what to read.
-func readFile(serverFlags Flags, filename string) ([]byte, error) {
+func readFile(config Config, filename string) ([]byte, error) {
 	// TODO check the backend to use
-	file, err := os.Open(s.Server.Flags.OutputDirectory + "/" + entry.Filename)
+	file, err := os.Open(config.OutputDirectory + "/" + filename)
 	if err != nil {
-		w.WriteHeader(500)
-		log.Println("[err] While requesting:", entry.Filename)
-		log.Println(err)
-		return
+		return nil, err
 	}
 
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
-		w.WriteHeader(500)
-		log.Println("[err] While reading:", entry.Filename)
-		log.Println(err)
+		return nil, err
 	}
+	return data, nil
 }
