@@ -1,0 +1,44 @@
+# upd configuration sample
+# -----------------------
+
+# The address to listen to with the server.
+listen_addr = ":9000"
+
+# The secret key to identify the client.
+secret_key = ""
+
+# Route served by the server.
+route = "/upd"
+
+# Path to a tls certificate file. Ex: /usr/share/certs/upd.pem
+certificate = ""
+
+# Path to a tls certificate key. Ex: /usr/share/certs/key.pem
+certificate_key = ""
+
+# 
+# Storage configuration
+#
+
+# Which storage you want to use to store the files
+# Possible values: fs, s3
+storage = "fs"
+
+#
+# Filesystem storage configuration
+#
+[fsstorage]
+
+# If you chose 'fs' as a storage, you must provide an
+# output directory
+output_dir = "/tmp"
+
+
+#
+# S3 storage configuration
+#
+[s3storage]
+
+access_key = ""
+access_secret = ""
+bucket = ""
