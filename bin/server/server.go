@@ -20,7 +20,7 @@ func readFromFile(filename string) (server.Config, error) {
 	// default hardcoded config when no configuration file is available
 	config := server.Config{
 		Addr:       ":9000",
-		Backend:    "fs",
+		Storage:    "fs",
 		RuntimeDir: "/tmp",
 		FSConfig: server.FSConfig{
 			OutputDirectory: "/tmp",
@@ -48,8 +48,8 @@ func readFromFile(filename string) (server.Config, error) {
 		config.Route = config.Route[:len(config.Route)-1]
 	}
 
-	if config.Backend != server.FS_BACKEND && config.Backend != server.S3_BACKEND {
-		log.Println("[err] Unknown backend:", config.Backend)
+	if config.Storage != server.FS_BACKEND && config.Storage != server.S3_BACKEND {
+		log.Println("[err] Unknown storage:", config.Storage)
 		os.Exit(1)
 	}
 

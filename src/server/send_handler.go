@@ -79,7 +79,7 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// writes the data on the storage backend
+	// writes the data on the storage
 	s.Server.WriteFile(name, data)
 
 	// reads the TTL

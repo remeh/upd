@@ -8,7 +8,7 @@ import (
 
 type Metadatas struct {
 	CreationTime time.Time           `json:"creation_time"`
-	Backend      string              `json:"backend"` // Backend used with this metadata file.
+	Storage      string              `json:"storage"` // Storage used with this metadata file.
 	Data         map[string]Metadata `json:"metadatas"`
 	LastUploaded []string            `json:"last_uploaded"` // stores the 20 last updated files id.
 }

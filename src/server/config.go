@@ -9,8 +9,8 @@ type Flags struct {
 }
 
 const (
-	FS_BACKEND = "fs"
-	S3_BACKEND = "s3"
+	FS_STORAGE = "fs"
+	S3_STORAGE = "s3"
 )
 
 // Server configuration
@@ -22,10 +22,10 @@ type Config struct {
 	CertificateFile string `toml:"certificate"`     // Filepath to an tls certificate
 	CertificateKey  string `toml:"certificate_key"` // Filepath to the key part of a certificate
 
-	Backend string `toml:"backend"` // possible values 'fs', 's3'
+	Storage string `toml:"storage"` // possible values 'fs', 's3'
 
-	FSConfig FSConfig `toml:"fsbackend"`
-	S3Config S3Config `toml:"s3backend"`
+	FSConfig FSConfig `toml:"fsstorage"`
+	S3Config S3Config `toml:"s3storage"`
 }
 
 type FSConfig struct {

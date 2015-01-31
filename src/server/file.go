@@ -13,7 +13,7 @@ import (
 // writeFile deals with writing the file, using the flags
 // to know where and the filename / data to store it.
 func (s *Server) WriteFile(filename string, data []byte) error {
-	if s.Config.Backend == FS_BACKEND {
+	if s.Config.Storage == FS_STORAGE {
 		file, err := os.Create(s.Config.FSConfig.OutputDirectory + "/" + filename)
 		if err != nil {
 			log.Println("[err] Can't create the file to write: ", filename)
@@ -34,14 +34,14 @@ func (s *Server) WriteFile(filename string, data []byte) error {
 		return nil
 	}
 
-	return fmt.Errorf("[err] Unsupported backend: %s", s.Config.Backend)
+	return fmt.Errorf("[err] Unsupported storage: %s", s.Config.Storage)
 }
 
 // readFile is the method to read the file from wherever it
 // is stored. The serverFlags are used to know where to read,
 // the filename is used to know what to read.
 func (s *Server) ReadFile(filename string) ([]byte, error) {
-	if s.Config.Backend == FS_BACKEND {
+	if s.Config.Storage == FS_STORAGE {
 		file, err := os.Open(s.Config.FSConfig.OutputDirectory + "/" + filename)
 		if err != nil {
 			return nil, err
@@ -55,16 +55,16 @@ func (s *Server) ReadFile(filename string) ([]byte, error) {
 		return data, nil
 	}
 
-	return nil, fmt.Errorf("[err] Unsupported backend: %s", s.Config.Backend)
+	return nil, fmt.Errorf("[err] Unsupported storage: %s", s.Config.Storage)
 }
 
 // Expire expires a file : delete it from the metadata
 // and from the FS.
 func (s *Server) Expire(m Metadata) error {
 	delete(s.Metadata.Data, m.Filename)
-	if s.Config.Backend == FS_BACKEND {
+	if s.Config.Storage == FS_STORAGE {
 		return os.Remove(s.Config.RuntimeDir + "/" + m.Filename)
 	}
 
-	return fmt.Errorf("[err] Unsupported backend: %s", s.Config.Backend)
+	return fmt.Errorf("[err] Unsupported storage: %s", s.Config.Storage)
 }

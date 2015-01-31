@@ -27,7 +27,7 @@ func NewServer(config Config) *Server {
 	return &Server{
 		Config: config,
 		Metadata: Metadatas{
-			Backend:      config.Backend,
+			Storage:      config.Storage,
 			CreationTime: time.Now(),
 			Data:         make(map[string]Metadata),
 		},
@@ -95,8 +95,8 @@ func (s *Server) readMetadata() {
 		s.Metadata = data
 		log.Printf("[info] %d metadata read.\n", len(s.Metadata.Data))
 
-		if data.Backend != s.Config.Backend {
-			log.Printf("[err] This metadata file has been created with the backend '%s' and upd is launched with backend '%s'.", data.Backend, s.Config.Backend)
+		if data.Storage != s.Config.Storage {
+			log.Printf("[err] This metadata file has been created with the storage '%s' and upd is launched with storage '%s'.", data.Storage, s.Config.Storage)
 			log.Println("[err] Can't start the daemon with this inconsistency")
 			os.Exit(1)
 		}
