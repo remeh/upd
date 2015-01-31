@@ -17,7 +17,7 @@ const (
 type Config struct {
 	Addr            string `toml:"listen_addr"`     // Address to listen to
 	SecretKey       string `toml:"secret_key"`      // Secret between the client and the server
-	RuntimeDir      string `toml:"run_dir"`         // Where the server can write the runtime files.
+	RuntimeDir      string `toml:"runtime_dir"`     // Where the server can write the runtime files.
 	Route           string `toml:"route"`           // Route served by the webserver
 	CertificateFile string `toml:"certificate"`     // Filepath to an tls certificate
 	CertificateKey  string `toml:"certificate_key"` // Filepath to the key part of a certificate

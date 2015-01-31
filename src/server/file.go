@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"time"
 
 	"github.com/awslabs/aws-sdk-go/aws"
 	"github.com/awslabs/aws-sdk-go/gen/s3"
@@ -42,9 +43,7 @@ func (s *Server) WriteFile(filename string, data []byte) error {
 		client := s3.New(creds, s.Config.S3Config.Region, nil)
 		body := ioutil.NopCloser(bytes.NewBuffer(data))
 
-		// TODO TTL
-
-		// creates the S3 put request
+		// Creates the S3 put request
 		por := &s3.PutObjectRequest{
 			Body:          body,
 			Key:           aws.String(filename),
@@ -52,6 +51,7 @@ func (s *Server) WriteFile(filename string, data []byte) error {
 			Bucket:        aws.String(s.Config.S3Config.Bucket),
 		}
 
+		// Sends the S3 put request
 		_, err := client.PutObject(por)
 		if err != nil {
 			return err
@@ -82,16 +82,19 @@ func (s *Server) ReadFile(filename string) ([]byte, error) {
 		creds := aws.Creds(s.Config.S3Config.AccessKey, s.Config.S3Config.AccessSecret, "")
 		client := s3.New(creds, s.Config.S3Config.Region, nil)
 
+		// The get request
 		gor := &s3.GetObjectRequest{
 			Key:    aws.String(filename),
 			Bucket: aws.String(s.Config.S3Config.Bucket),
 		}
 
+		// Sends the request
 		resp, err := client.GetObject(gor)
 		if err != nil {
 			return nil, err
 		}
 
+		// Reads the result
 		data, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Println("[err] Can't read the body of a GetObjectOutput from AWS")
@@ -108,10 +111,38 @@ func (s *Server) ReadFile(filename string) ([]byte, error) {
 // Expire expires a file : delete it from the metadata
 // and from the FS.
 func (s *Server) Expire(m Metadata) error {
-	delete(s.Metadata.Data, m.Filename)
+	filename := m.Filename
+	delete(s.Metadata.Data, filename)
 	if s.Config.Storage == FS_STORAGE {
-		return os.Remove(s.Config.RuntimeDir + "/" + m.Filename)
+		return os.Remove(s.Config.RuntimeDir + "/" + filename)
+	} else if s.Config.Storage == S3_STORAGE {
+		// S3 connection
+		creds := aws.Creds(s.Config.S3Config.AccessKey, s.Config.S3Config.AccessSecret, "")
+		client := s3.New(creds, s.Config.S3Config.Region, nil)
+
+		// The get request
+		dor := &s3.DeleteObjectRequest{
+			Key:    aws.String(filename),
+			Bucket: aws.String(s.Config.S3Config.Bucket),
+		}
+
+		_, err := client.DeleteObject(dor)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	}
 
 	return fmt.Errorf("[err] Unsupported storage: %s", s.Config.Storage)
+}
+
+// computeEndOfLife return as a string the end of life of the new file.
+func (s *Server) computeEndOfLife(ttl string, now time.Time) time.Time {
+	if len(ttl) == 0 {
+		return time.Time{}
+	}
+	duration, _ := time.ParseDuration(ttl) // no error possible 'cause already checked in the controller
+	t := now.Add(duration)
+	return t
 }

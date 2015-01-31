@@ -4,7 +4,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -23,9 +22,9 @@ const (
 
 // Json returned to the client
 type SendResponse struct {
-	Name         string `json:"name"`
-	DeleteKey    string `json:"delete_key"`
-	DeletionTime string `json:"availaible_until"`
+	Name         string    `json:"name"`
+	DeleteKey    string    `json:"delete_key"`
+	DeletionTime time.Time `json:"availaible_until"`
 }
 
 const (
@@ -79,8 +78,8 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// writes the data on the storage
-	s.Server.WriteFile(name, data)
+	var expirationTime time.Time
+	now := time.Now()
 
 	// reads the TTL
 	var ttl string
@@ -93,10 +92,15 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(400)
 			return
 		}
+
+		// compute the expiration time
+		expirationTime = s.Server.computeEndOfLife(ttl, now)
 	}
 
+	// writes the data on the storage
+	s.Server.WriteFile(name, data)
+
 	// add to metadata
-	now := time.Now()
 	deleteKey := s.randomString(16)
 	s.addMetadata(name, original, ttl, deleteKey, now)
 	s.Server.writeMetadata(true) // TODO do it regularly instead of here.
@@ -105,23 +109,13 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	response := SendResponse{
 		Name:         name,
 		DeleteKey:    deleteKey,
-		DeletionTime: s.computeEndOfLife(ttl, now),
+		DeletionTime: expirationTime,
 	}
 
 	resp, _ := json.Marshal(response)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(resp)
-}
-
-// computeEndOfLife return as a string the end of life of the new file.
-func (s *SendHandler) computeEndOfLife(ttl string, now time.Time) string {
-	if len(ttl) == 0 {
-		return "Forever."
-	}
-	duration, _ := time.ParseDuration(ttl) // no error possible 'cause already checked in the controller
-	t := now.Add(duration)
-	return fmt.Sprintf("%s\n", t)
 }
 
 // randomString generates a random valid URL string of the given size
