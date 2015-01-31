@@ -7,6 +7,7 @@ import (
 	"flag"
 	"io/ioutil"
 	"log"
+	"os"
 
 	"server"
 
@@ -18,9 +19,13 @@ import (
 func readFromFile(filename string) (server.Config, error) {
 	// default hardcoded config when no configuration file is available
 	config := server.Config{
-		Addr:            ":9000",
-		OutputDirectory: "/tmp",
-		Route:           "/upd",
+		Addr:       ":9000",
+		Backend:    "fs",
+		RuntimeDir: "/tmp",
+		FSConfig: server.FSConfig{
+			OutputDirectory: "/tmp",
+		},
+		Route: "/upd",
 	}
 
 	// read the file
@@ -41,6 +46,11 @@ func readFromFile(filename string) (server.Config, error) {
 	}
 	if config.Route[len(config.Route)-1] == '/' {
 		config.Route = config.Route[:len(config.Route)-1]
+	}
+
+	if config.Backend != server.FS_BACKEND && config.Backend != server.S3_BACKEND {
+		log.Println("[err] Unknown backend:", config.Backend)
+		os.Exit(1)
 	}
 
 	return config, nil

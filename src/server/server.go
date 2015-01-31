@@ -25,8 +25,12 @@ func NewServer(config Config) *Server {
 	rand.Seed(time.Now().Unix())
 
 	return &Server{
-		Config:   config,
-		Metadata: Metadatas{CreationTime: time.Now(), Data: make(map[string]Metadata)},
+		Config: config,
+		Metadata: Metadatas{
+			Backend:      config.Backend,
+			CreationTime: time.Now(),
+			Data:         make(map[string]Metadata),
+		},
 	}
 }
 
@@ -65,7 +69,7 @@ func (s *Server) StartCleanJob() {
 
 // Reads the stored metadata.
 func (s *Server) readMetadata() {
-	file, err := os.Open(s.Config.OutputDirectory + "/metadata.json")
+	file, err := os.Open(s.Config.RuntimeDir + "/metadata.json")
 	create := false
 	if err != nil {
 		create = true
@@ -90,15 +94,21 @@ func (s *Server) readMetadata() {
 		json.Unmarshal(readData, &data)
 		s.Metadata = data
 		log.Printf("[info] %d metadata read.\n", len(s.Metadata.Data))
+
+		if data.Backend != s.Config.Backend {
+			log.Printf("[err] This metadata file has been created with the backend '%s' and upd is launched with backend '%s'.", data.Backend, s.Config.Backend)
+			log.Println("[err] Can't start the daemon with this inconsistency")
+			os.Exit(1)
+		}
 		file.Close()
 	}
 }
 
 func (s *Server) writeMetadata(printLog bool) {
 	// TODO mutex!!
-	file, err := os.Create(s.Config.OutputDirectory + "/metadata.json")
+	file, err := os.Create(s.Config.RuntimeDir + "/metadata.json")
 	if err != nil {
-		log.Println("[err] Can't write in the output directory:", s.Config.OutputDirectory)
+		log.Println("[err] Can't write in the output directory:", s.Config.RuntimeDir)
 		log.Println(err)
 		os.Exit(1)
 	}
@@ -128,11 +138,4 @@ func (s *Server) prepareRouter() *mux.Router {
 	r.Handle(s.Config.Route+"/{file}", sh) // Serving route.
 
 	return r
-}
-
-// Expire expires a file : delete it from the metadata
-// and from the FS.
-func (s *Server) Expire(m Metadata) error {
-	delete(s.Metadata.Data, m.Filename)
-	return os.Remove(s.Config.OutputDirectory + "/" + m.Filename)
 }

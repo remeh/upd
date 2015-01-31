@@ -63,7 +63,7 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// read it
-	data, err := readFile(s.Server.Config, entry.Filename)
+	data, err := s.Server.ReadFile(entry.Filename)
 
 	if err != nil {
 		log.Println("[err] Can't read the file from the storage.")
