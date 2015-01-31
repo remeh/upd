@@ -4,11 +4,9 @@ Upload from CLI, share with browsers.
 
 ## About
 
-upd is file upload service to quickly share files through http(s) supporting different storage backend (filesystem and Amazon S3).
+upd is a file upload service to quickly share files through http(s) supporting different storage backend (filesystem and Amazon S3).
 
-The server provides a simple API to easily allow the creation of clients.
-
-A command-line client is also provided in this repo.
+The server provides a simple API to easily allow the creation of clients and a command-line client is also provided in this repository.
 
 
 ## Features
@@ -83,5 +81,5 @@ Available flags for the `client` executable:
 -keep=false: Whether or not we must keep the filename
 -key="": A shared secret key to identify the client.
 -ttl="": TTL after which the file expires, ex: 30m. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"
--url="http://localhost:9000/upd": The server to contact.
+-url="http://localhost:9000/upd": The upd server to contact.
 ```
