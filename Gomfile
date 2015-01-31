@@ -1,3 +1,4 @@
 gom "github.com/gorilla/mux"
 gom "github.com/BurntSushi/toml"
-
+gom "github.com/vaughan0/go-ini"
+gom "github.com/awslabs/aws-sdk-go"

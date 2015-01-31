@@ -1,3 +1,4 @@
+#
 # upd configuration sample
 # -----------------------
 
@@ -41,4 +42,5 @@ output_dir = "/tmp"
 
 access_key = ""
 access_secret = ""
+region = "" # example 'eu-west-1'
 bucket = ""

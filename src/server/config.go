@@ -35,5 +35,6 @@ type FSConfig struct {
 type S3Config struct {
 	AccessKey    string `toml:"access_key"`
 	AccessSecret string `toml:"access_secret"`
+	Region       string `toml:"region"`
 	Bucket       string `toml:"bucket"`
 }

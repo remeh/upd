@@ -48,7 +48,7 @@ func readFromFile(filename string) (server.Config, error) {
 		config.Route = config.Route[:len(config.Route)-1]
 	}
 
-	if config.Storage != server.FS_BACKEND && config.Storage != server.S3_BACKEND {
+	if config.Storage != server.FS_STORAGE && config.Storage != server.S3_STORAGE {
 		log.Println("[err] Unknown storage:", config.Storage)
 		os.Exit(1)
 	}
