@@ -17,6 +17,9 @@ certificate = ""
 # Path to a tls certificate key. Ex: /usr/share/certs/key.pem
 certificate_key = ""
 
+# Directory in which the server can write the runtime files.
+runtime_dir = "/tmp" 
+
 # 
 # Storage configuration
 #
