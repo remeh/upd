@@ -4,11 +4,24 @@ Upload from CLI, share with browsers.
 
 ## About
 
-upd is the Rémy 'remeh' Mathieu's entry to the first GopherGala, 2015.
+upd is file upload service to quickly share files through http(s) supporting different storage backend (filesystem and Amazon S3).
 
-A client/server to upload and share files through http(s), with support of files auto-destruction with TTL.
+The server provides a simple API to easily allow the creation of clients.
 
-I only had the possiblity to work on the first day of the competition, saturday, for about 9 hours.
+A command-line client is also provided in this repo.
+
+
+## Features
+
+  * Storages backend : Filesystem, Amazon S3
+  * Daemon listening to receive files 
+  * Daemon serving files
+  * TTL for expiration of files.
+  * Delete link 
+  * HTTPs 
+  * Secret shared key between client / server
+  * Get last uploaded files
+  * Routine job cleaning the expired files
 
 ## How to use
 
@@ -40,13 +53,10 @@ gom build bin/server/server.go
 Available flags for the `server` executable:
 
 ```
--addr=":9000": The address to listen to with the server.
--cfile="": Path to a TLS certificate. Ex: ./certs/cert.pem
--ckey="": Path to a TLS key file. Ex: ./certs/key.pem
--key="": A shared secret key to identify the client.
--out="./": Directory in which the server can write the data.
--route="/upd": Route served by the server.
+-c="server.conf"": Path to a configuration file.
 ```
+
+The configuration file is well-documented.
 
 ### Upload a file with the client
 
@@ -75,18 +85,3 @@ Available flags for the `client` executable:
 -ttl="": TTL after which the file expires, ex: 30m. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"
 -url="http://localhost:9000/upd": The server to contact.
 ```
-
-## Features
-
-  * Daemon listening for files 
-  * Daemon serving files 
-  * Client uploading files 
-    * Keepname option 
-    * TTL option 
-  * Secret key 
-  * TTL 
-  * Delete link 
-  * HTTPs 
-  * Get last uploaded 
-  * Routine job cleaning the expired files
-
