@@ -41,6 +41,8 @@ to setup the dependencies.
 
 ### Start the daemon
 
+#### Normal server
+
 To start the server:
 
 ```
@@ -55,6 +57,24 @@ Available flags for the `server` executable:
 ```
 
 The configuration file is well-documented.
+
+#### Docker server
+
+upd daemon is ready to be launched with `Docker`. You must first build the docker container, in the upd directory :
+
+```
+docker build -t upd
+```
+
+It'll build the upd server docker container. What you must know:
+  * The ENTRYPOINT docker has been binded on the configuration file `/etc/upd/server.conf`, this way, by using a volume, you can provide your configuration file.
+  * Don't forget to bind a volume for the data directory if you're using the filesystem storage backend. If you don't do so, you'll lost your data when the docker will be stopped/restarted.
+
+Example of how to launch the upd container (with the server.conf in your host `/home/user/`) :
+
+```
+docker run --rm -ti -v /home/user:/etc/upd -p 9000:9000 upd
+```
 
 ### Upload a file with the client
 
