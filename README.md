@@ -15,6 +15,7 @@ The server provides a simple API to easily allow the creation of clients and a c
   * Daemon listening to receive files 
   * Daemon serving files
   * TTL for expiration of files.
+  * Tags on files + search by tags API
   * Delete link 
   * HTTPs 
   * Secret shared key between client / server
@@ -98,8 +99,8 @@ Available flags for the `client` executable:
 
 ```
 -ca="none": For HTTPS support: none / filename of an accepted CA / unsafe (doesn't check the CA)
--keep=false: Whether or not we must keep the filename
 -key="": A shared secret key to identify the client.
+-tags="": Tag the files. Ex: -tags="screenshot,may"
 -ttl="": TTL after which the file expires, ex: 30m. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"
 -url="http://localhost:9000/upd": The upd server to contact.
 ```
