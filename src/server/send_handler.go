@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -97,13 +98,19 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		expirationTime = s.Server.computeEndOfLife(ttl, now)
 	}
 
+	// reads the tags
+	tags := make([]string, 0)
+	if len(r.Form["tags"]) > 0 {
+		tags = strings.Split(r.Form["tags"][0], ",")
+	}
+
 	// writes the data on the storage
 	s.Server.WriteFile(name, data)
 
 	// add to metadata
 	deleteKey := s.randomString(16)
-	s.addMetadata(name, original, ttl, deleteKey, now)
-	s.Server.writeMetadata(true) // TODO do it regularly instead of here.
+	s.addMetadata(name, original, tags, ttl, deleteKey, now)
+	s.Server.writeMetadata(true)
 
 	// encode the response json
 	response := SendResponse{
@@ -130,10 +137,11 @@ func (s *SendHandler) randomString(size int) string {
 }
 
 // addMetadata adds the given entry to the Server metadata information.
-func (s *SendHandler) addMetadata(name string, original string, ttl string, key string, now time.Time) {
+func (s *SendHandler) addMetadata(name string, original string, tags []string, ttl string, key string, now time.Time) {
 	metadata := Metadata{
 		Filename:     name,
 		Original:     original,
+		Tags:         tags,
 		TTL:          ttl,
 		DeleteKey:    key,
 		CreationTime: now,

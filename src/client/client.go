@@ -101,7 +101,7 @@ func (c *Client) sendData(filename string, data []byte) error {
 	params["ttl"] = c.Flags.TTL
 	params["name"] = filename
 
-	uri = c.buildParams(uri, params)
+	uri = c.buildParams(uri, params, c.Flags.Tags)
 
 	req, err := http.NewRequest("POST", uri, body)
 	req.Header.Add("Content-Type", writer.FormDataContentType())
@@ -157,10 +157,11 @@ func (c *Client) sendData(filename string, data []byte) error {
 }
 
 // buildParams adds the GET parameters to the given uri.
-func (c *Client) buildParams(uri string, params map[string]string) string {
-	if len(params) == 0 {
+func (c *Client) buildParams(uri string, params map[string]string, tags []string) string {
+	if len(params) == 0 && len(tags) == 0 {
 		return uri
 	}
+
 	atLeastOne := false
 
 	ret := uri
@@ -173,12 +174,28 @@ func (c *Client) buildParams(uri string, params map[string]string) string {
 		}
 	}
 
+	// remove last & if no tags
+	if len(tags) == 0 {
+		ret = ret[0 : len(ret)-1]
+	}
+
+	pTags := "tags="
+	for i := range tags {
+		pTags = pTags + url.QueryEscape(tags[i])
+		if i < len(tags)-1 {
+			pTags = pTags + url.QueryEscape(",")
+		}
+		atLeastOne = true
+	}
+
+	ret = ret + pTags
+
 	// there were parameters but they're all empty
 	if !atLeastOne {
 		return uri
 	}
 
-	ret = ret[0 : len(ret)-1]
+	println(ret)
 	return ret
 }
 

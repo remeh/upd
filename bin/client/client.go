@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -19,12 +20,14 @@ type Client struct {
 
 func parseFlags() (client.Flags, error) {
 	var flags client.Flags
+	var tags string
 
 	// Declare the flags
 	flag.StringVar(&(flags.CA), "ca", "none", "For HTTPS support: none / filename of an accepted CA / unsafe (doesn't check the CA)")
 	flag.StringVar(&(flags.ServerUrl), "url", "http://localhost:9000/upd", "The server to contact")
 	flag.StringVar(&(flags.SecretKey), "key", "", "A shared secret key to identify the client.")
 	flag.StringVar(&(flags.TTL), "ttl", "", `TTL after which the file expires, ex: 30m. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"`)
+	flag.StringVar(&tags, "tags", "", "Tags to attach to the file, separated by a comma. Ex: \"screenshot,may\"")
 
 	// Read them
 	flag.Parse()
@@ -39,6 +42,14 @@ func parseFlags() (client.Flags, error) {
 		_, err := time.ParseDuration(flags.TTL)
 		if err != nil {
 			return flags, err
+		}
+	}
+
+	// split the tags in an array and trim them
+	if len(tags) > 0 {
+		flags.Tags = strings.Split(tags, ",")
+		for i := range flags.Tags {
+			flags.Tags[i] = strings.Trim(flags.Tags[i], " ")
 		}
 	}
 
