@@ -74,8 +74,10 @@ It'll build the upd server docker container. What you must know:
 Example of how to launch the upd container (with the `server.conf` in your host `/home/user/`) :
 
 ```
-docker run --rm -ti -v /home/user:/etc/upd -p 9000:9000 upd
+docker run --rm -ti -v /home/user:/etc/upd -v /home/user/data:/tmp -p 9000:9000 upd
 ```
+
+A `upd.service` is available in the repository as an example to use `systemd` to manage the lifecycle of the docker container in the system.
 
 ### Upload a file with the client
 
