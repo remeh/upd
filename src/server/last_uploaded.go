@@ -21,7 +21,6 @@ type LastUploadedResponse struct {
 }
 
 func (l *LastUploadedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	println("????")
 	// checks the secret key
 	key := r.Header.Get(SECRET_KEY_HEADER)
 	if l.Server.Config.SecretKey != "" && key != l.Server.Config.SecretKey {

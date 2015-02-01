@@ -128,8 +128,11 @@ func (s *Server) prepareRouter() *mux.Router {
 	sendHandler := &SendHandler{s}
 	r.Handle(s.Config.Route+"/1.0/send", sendHandler)
 
-	lastUploadeHanlder := &LastUploadedHandler{s}
-	r.Handle(s.Config.Route+"/1.0/list", lastUploadeHanlder)
+	lastUploadeHandler := &LastUploadedHandler{s}
+	r.Handle(s.Config.Route+"/1.0/list", lastUploadeHandler)
+
+	searchHandler := &SearchHandler{s}
+	r.Handle(s.Config.Route+"/1.0/search", searchHandler)
 
 	deleteHandler := &DeleteHandler{s}
 	r.Handle(s.Config.Route+"/{file}/{key}", deleteHandler)
