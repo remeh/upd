@@ -54,7 +54,7 @@ gom build bin/server/server.go
 Available flags for the `server` executable:
 
 ```
--c="server.conf"": Path to a configuration file.
+-c="server.conf": Path to a configuration file.
 ```
 
 The configuration file is well-documented.
