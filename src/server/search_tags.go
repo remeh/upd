@@ -20,9 +20,11 @@ type SearchTagsResponse struct {
 }
 
 type SearchTagsEntryResponse struct {
-	Filename     string    `json:"filename"`      // name attributed by upd
-	Original     string    `json:"original"`      // original name of the file
-	CreationTime time.Time `json:"creation_time"` // creation time of the given file
+	Filename       string    `json:"filename"`        // name attributed by upd
+	Original       string    `json:"original"`        // original name of the file
+	CreationTime   time.Time `json:"creation_time"`   // creation time of the given file
+	ExpirationTime time.Time `json:"expiration_time"` // When this file expired
+	Tags           []string  `json:"tags"`            // Tags attached to this file.
 }
 
 func (l *SearchTagsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -34,12 +36,13 @@ func (l *SearchTagsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	r.ParseForm()
-	if len(r.Form["tag"]) == 0 || len(r.Form["tag"][0]) == 0 {
+	if len(r.Form["tags"]) == 0 || len(r.Form["tags"][0]) == 0 {
+		println("!")
 		w.WriteHeader(400)
 		return
 	}
 
-	tagParam := r.Form["tag"][0]
+	tagParam := r.Form["tags"][0]
 	tags := strings.Split(tagParam, ",")
 	for i := range tags {
 		tags[i] = strings.Trim(tags[i], " ")
@@ -54,6 +57,7 @@ func (l *SearchTagsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				Filename:     v.Filename,
 				Original:     v.Original,
 				CreationTime: v.CreationTime,
+				Tags:         v.Tags,
 			}
 			response.Results = append(response.Results, entry)
 		}

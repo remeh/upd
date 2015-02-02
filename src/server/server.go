@@ -132,7 +132,7 @@ func (s *Server) prepareRouter() *mux.Router {
 	r.Handle(s.Config.Route+"/1.0/list", lastUploadeHandler)
 
 	searchTagsHandler := &SearchTagsHandler{s}
-	r.Handle(s.Config.Route+"/1.0/search-tags", searchTagsHandler)
+	r.Handle(s.Config.Route+"/1.0/search_tags", searchTagsHandler)
 
 	deleteHandler := &DeleteHandler{s}
 	r.Handle(s.Config.Route+"/{file}/{key}", deleteHandler)

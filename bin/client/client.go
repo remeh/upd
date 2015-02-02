@@ -27,6 +27,7 @@ func parseFlags() (client.Flags, error) {
 	flag.StringVar(&(flags.ServerUrl), "url", "http://localhost:9000/upd", "The server to contact")
 	flag.StringVar(&(flags.SecretKey), "key", "", "A shared secret key to identify the client.")
 	flag.StringVar(&(flags.TTL), "ttl", "", `TTL after which the file expires, ex: 30m. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"`)
+	flag.StringVar(&(flags.SearchTags), "search-tags", "", "Search by tags. If many, must be separated by a comma, an 'or' operator is used. Ex: \"may,screenshot\".")
 	flag.StringVar(&tags, "tags", "", "Tags to attach to the file, separated by a comma. Ex: \"screenshot,may\"")
 
 	// Read them
@@ -74,21 +75,30 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Looks for the file to send
-	// TODO directory
-	if len(flag.Args()) < 1 {
-		fmt.Printf("Usage: %s [flags] file1 file2\n", os.Args[0])
-		flag.PrintDefaults()
-	}
-
 	c := client.NewClient(flags)
 
-	var wg sync.WaitGroup
-	// Send each file.
-	for _, filename := range flag.Args() {
-		wg.Add(1)
-		go sendFile(&wg, c, filename)
-	}
+	// Looks for tags to search
+	if len(flags.SearchTags) > 0 {
+		tags := strings.Split(flags.SearchTags, ",")
+		for i := range tags {
+			tags[i] = strings.Trim(tags[i], " ")
+		}
+		c.SearchTags(tags)
+	} else {
+		// Looks for the file to send
+		// TODO directory
+		if len(flag.Args()) < 1 {
+			fmt.Printf("Usage: %s [flags] file1 file2\n", os.Args[0])
+			flag.PrintDefaults()
+		}
 
-	wg.Wait() // Wait for all routine to stop
+		var wg sync.WaitGroup
+		// Send each file.
+		for _, filename := range flag.Args() {
+			wg.Add(1)
+			go sendFile(&wg, c, filename)
+		}
+
+		wg.Wait() // Wait for all routine to stop
+	}
 }
