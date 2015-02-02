@@ -177,25 +177,24 @@ func (c *Client) buildParams(uri string, params map[string]string, tags []string
 	// remove last & if no tags
 	if len(tags) == 0 {
 		ret = ret[0 : len(ret)-1]
-	}
-
-	pTags := "tags="
-	for i := range tags {
-		pTags = pTags + url.QueryEscape(tags[i])
-		if i < len(tags)-1 {
-			pTags = pTags + url.QueryEscape(",")
+	} else {
+		// add the tags.
+		pTags := "tags="
+		for i := range tags {
+			pTags = pTags + url.QueryEscape(tags[i])
+			if i < len(tags)-1 {
+				pTags = pTags + url.QueryEscape(",")
+			}
+			atLeastOne = true
 		}
-		atLeastOne = true
+		ret = ret + pTags
 	}
-
-	ret = ret + pTags
 
 	// there were parameters but they're all empty
 	if !atLeastOne {
 		return uri
 	}
 
-	println(ret)
 	return ret
 }
 
