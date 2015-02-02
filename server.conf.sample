@@ -11,10 +11,10 @@ secret_key = ""
 # Route served by the server.
 route = "/upd"
 
-# Path to a tls certificate file. Ex: /usr/share/certs/upd.pem
+# Path to a tls certificate file. Ex: /usr/share/certs/upd.pem (optional)
 certificate = ""
 
-# Path to a tls certificate key. Ex: /usr/share/certs/key.pem
+# Path to a tls certificate key. Ex: /usr/share/certs/key.pem (optional)
 certificate_key = ""
 
 # Directory in which the server can write the runtime files.
