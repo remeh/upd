@@ -95,7 +95,7 @@ func (c *Client) sendData(filename string, data []byte) error {
 	fmt.Println("Delete URL:", c.Flags.ServerUrl+"/"+sendResponse.Name+"/"+sendResponse.DeleteKey)
 
 	// compute until when it'll be available
-	if sendResponse.DeletionTime.IsZero() {
+	if sendResponse.ExpirationTime.IsZero() {
 		fmt.Println("Available forever.")
 	} else {
 		fmt.Println("Available until:", sendResponse.ExpirationTime)
