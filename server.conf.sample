@@ -5,7 +5,7 @@
 # The address to listen to with the server.
 listen_addr = ":9000"
 
-# The secret key to identify the client.
+# The secret key to identify the client. (optional)
 secret_key = ""
 
 # Route served by the server.
