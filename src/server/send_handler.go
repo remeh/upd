@@ -109,7 +109,7 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// add to metadata
 	deleteKey := s.randomString(16)
-	s.addMetadata(name, original, tags, ttl, deleteKey, now)
+	s.addMetadata(name, original, tags, expirationTime, ttl, deleteKey, now)
 	s.Server.writeMetadata(true)
 
 	// encode the response json
@@ -137,14 +137,15 @@ func (s *SendHandler) randomString(size int) string {
 }
 
 // addMetadata adds the given entry to the Server metadata information.
-func (s *SendHandler) addMetadata(name string, original string, tags []string, ttl string, key string, now time.Time) {
+func (s *SendHandler) addMetadata(name string, original string, tags []string, expirationTime time.Time, ttl string, key string, now time.Time) {
 	metadata := Metadata{
-		Filename:     name,
-		Original:     original,
-		Tags:         tags,
-		TTL:          ttl,
-		DeleteKey:    key,
-		CreationTime: now,
+		Filename:       name,
+		Original:       original,
+		Tags:           tags,
+		TTL:            ttl,
+		ExpirationTime: expirationTime,
+		DeleteKey:      key,
+		CreationTime:   now,
 	}
 	s.Server.Metadata.Data[name] = metadata
 

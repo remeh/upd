@@ -66,7 +66,12 @@ func (c *Client) SearchTags(tags []string) {
 		fmt.Printf("Original name:\n  %s\n", entry.Original)
 		fmt.Printf("Filename:\n  %s\n", entry.Filename)
 		fmt.Printf("Creation time:\n  %s\n", entry.CreationTime)
-		fmt.Printf("Tags:\n  %s\n", entry.Tags)
+		if !entry.ExpirationTime.IsZero() {
+			fmt.Printf("Expiration time:\n  %s\n", entry.ExpirationTime)
+		}
+		if len(entry.Tags) > 0 {
+			fmt.Printf("Tags:\n  %s\n", entry.Tags)
+		}
 		fmt.Println("--")
 	}
 }

@@ -54,10 +54,11 @@ func (l *SearchTagsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, v := range l.Server.Metadata.Data {
 		if stringArrayContainsOne(v.Tags, tags) {
 			entry := SearchTagsEntryResponse{
-				Filename:     v.Filename,
-				Original:     v.Original,
-				CreationTime: v.CreationTime,
-				Tags:         v.Tags,
+				Filename:       v.Filename,
+				Original:       v.Original,
+				CreationTime:   v.CreationTime,
+				ExpirationTime: v.ExpirationTime,
+				Tags:           v.Tags,
 			}
 			response.Results = append(response.Results, entry)
 		}
