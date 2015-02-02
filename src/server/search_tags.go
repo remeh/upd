@@ -10,22 +10,22 @@ import (
 	"time"
 )
 
-type SearchHandler struct {
+type SearchTagsHandler struct {
 	Server *Server // pointer to the started server
 }
 
 // Json returned to the client
-type SearchResponse struct {
-	Results []SearchEntryResponse `json:"results"`
+type SearchTagsResponse struct {
+	Results []SearchTagsEntryResponse `json:"results"`
 }
 
-type SearchEntryResponse struct {
+type SearchTagsEntryResponse struct {
 	Filename     string    `json:"filename"`      // name attributed by upd
 	Original     string    `json:"original"`      // original name of the file
 	CreationTime time.Time `json:"creation_time"` // creation time of the given file
 }
 
-func (l *SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (l *SearchTagsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// checks the secret key
 	key := r.Header.Get(SECRET_KEY_HEADER)
 	if l.Server.Config.SecretKey != "" && key != l.Server.Config.SecretKey {
@@ -47,10 +47,10 @@ func (l *SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// At the moment, without a 'database' system, we must
 	// look in every entries to find if some have the tags.
-	response := SearchResponse{Results: make([]SearchEntryResponse, 0)}
+	response := SearchTagsResponse{Results: make([]SearchTagsEntryResponse, 0)}
 	for _, v := range l.Server.Metadata.Data {
 		if stringArrayContainsOne(v.Tags, tags) {
-			entry := SearchEntryResponse{
+			entry := SearchTagsEntryResponse{
 				Filename:     v.Filename,
 				Original:     v.Original,
 				CreationTime: v.CreationTime,
