@@ -63,15 +63,16 @@ func (c *Client) SearchTags(tags []string) {
 
 	for i := range entries.Results {
 		entry := entries.Results[i]
-		fmt.Printf("Original name:\n  %s\n", entry.Original)
-		fmt.Printf("Filename:\n  %s\n", entry.Filename)
-		fmt.Printf("Creation time:\n  %s\n", entry.CreationTime)
+		fmt.Printf("-> %s\n", entry.Original)
+		fmt.Printf("Link: %s%s\n", c.Flags.ServerUrl, entry.Filename)
+		fmt.Printf("Deletion link: %s%s/%s\n", c.Flags.ServerUrl, entry.Filename, entry.DeleteKey)
+		fmt.Printf("Creation time: %s\n", entry.CreationTime)
 		if !entry.ExpirationTime.IsZero() {
-			fmt.Printf("Expiration time:\n  %s\n", entry.ExpirationTime)
+			fmt.Printf("Expiration time: %s\n", entry.ExpirationTime)
 		}
 		if len(entry.Tags) > 0 {
-			fmt.Printf("Tags:\n  %s\n", entry.Tags)
+			fmt.Printf("Tags: %s\n", entry.Tags)
 		}
-		fmt.Println("--")
+		fmt.Println("-----------------------")
 	}
 }

@@ -19,9 +19,12 @@ type SearchTagsResponse struct {
 	Results []SearchTagsEntryResponse `json:"results"`
 }
 
+// actually contains everything in Metadata but eh,
+// looks more clean to do so if oneee daaay...
 type SearchTagsEntryResponse struct {
 	Filename       string    `json:"filename"`        // name attributed by upd
 	Original       string    `json:"original"`        // original name of the file
+	DeleteKey      string    `json:"delete_key"`      // the delete key
 	CreationTime   time.Time `json:"creation_time"`   // creation time of the given file
 	ExpirationTime time.Time `json:"expiration_time"` // When this file expired
 	Tags           []string  `json:"tags"`            // Tags attached to this file.
@@ -57,6 +60,7 @@ func (l *SearchTagsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				Filename:       v.Filename,
 				Original:       v.Original,
 				CreationTime:   v.CreationTime,
+				DeleteKey:      v.DeleteKey,
 				ExpirationTime: v.ExpirationTime,
 				Tags:           v.Tags,
 			}
