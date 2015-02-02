@@ -23,9 +23,9 @@ const (
 
 // Json returned to the client
 type SendResponse struct {
-	Name         string    `json:"name"`
-	DeleteKey    string    `json:"delete_key"`
-	DeletionTime time.Time `json:"availaible_until"`
+	Name           string    `json:"name"`
+	DeleteKey      string    `json:"delete_key"`
+	ExpirationTime time.Time `json:"expiration_time"`
 }
 
 const (
@@ -114,9 +114,9 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// encode the response json
 	response := SendResponse{
-		Name:         name,
-		DeleteKey:    deleteKey,
-		DeletionTime: expirationTime,
+		Name:           name,
+		DeleteKey:      deleteKey,
+		ExpirationTime: expirationTime,
 	}
 
 	resp, _ := json.Marshal(response)

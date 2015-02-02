@@ -98,7 +98,7 @@ func (c *Client) sendData(filename string, data []byte) error {
 	if sendResponse.DeletionTime.IsZero() {
 		fmt.Println("Available forever.")
 	} else {
-		fmt.Println("Available until:", sendResponse.DeletionTime)
+		fmt.Println("Available until:", sendResponse.ExpirationTime)
 	}
 	fmt.Println("--")
 
