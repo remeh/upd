@@ -18,7 +18,7 @@ type SendHandler struct {
 }
 
 const (
-	SECRET_KEY_HEADER = "X-Clioud-Key"
+	SECRET_KEY_HEADER = "X-upd-key"
 )
 
 // Json returned to the client
