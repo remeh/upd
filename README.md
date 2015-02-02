@@ -100,6 +100,7 @@ Available until: 2015-01-24 23:01:18.452801595 +0100 CET
 Available flags for the `client` executable:
 
 ```
+-search-tags="": Search by tags. If many, must be separated by a comma, an 'or' operator is used. Ex: "may,screenshot".
 -ca="none": For HTTPS support: none / filename of an accepted CA / unsafe (doesn't check the CA)
 -key="": A shared secret key to identify the client.
 -tags="": Tag the files. Ex: -tags="screenshot,may"
