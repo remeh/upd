@@ -16,6 +16,7 @@ type LastUploadedHandler struct {
 // Json returned to the client
 type LastUploadedResponse struct {
 	Name         string    `json:"name"`
+	Original     string    `json:"original"`
 	DeleteKey    string    `json:"delete_key"`
 	CreationTime time.Time `json:"creation_time"`
 }
@@ -33,6 +34,7 @@ func (l *LastUploadedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		entry := l.Server.Metadata.Data[v]
 		lastUploaded[i] = LastUploadedResponse{
 			Name:         entry.Filename,
+			Original:     entry.Original,
 			DeleteKey:    entry.DeleteKey,
 			CreationTime: entry.CreationTime,
 		}
