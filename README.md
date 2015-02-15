@@ -13,7 +13,7 @@ The server provides a simple API to easily allow the creation of clients and a c
 
   * Storages backend : Filesystem, Amazon S3
   * Daemon listening to receive files 
-  * Daemon serving files
+  * Daemon serving files (with resize feature on images)
   * TTL for expiration of files.
   * Tags on files + search by tags API
   * Delete link 
