@@ -3,4 +3,4 @@ gom "github.com/BurntSushi/toml"
 gom "github.com/vaughan0/go-ini"
 gom "github.com/awslabs/aws-sdk-go/aws"
 gom "github.com/awslabs/aws-sdk-go/gen/s3"
-
+gom "github.com/nfnt/resize"
