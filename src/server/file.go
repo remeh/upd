@@ -113,6 +113,18 @@ func (s *Server) ReadFile(filename string) ([]byte, error) {
 func (s *Server) Expire(m Metadata) error {
 	filename := m.Filename
 	delete(s.Metadata.Data, filename)
+
+	lastUploaded := s.Metadata.LastUploaded
+	for i, id := range lastUploaded {
+		if id == filename {
+			if len(lastUploaded) > 1 {
+				s.Metadata.LastUploaded = append(lastUploaded[:i], lastUploaded[i+1:]...)
+			} else {
+				s.Metadata.LastUploaded = nil
+			}
+		}
+	}
+
 	if s.Config.Storage == FS_STORAGE {
 		return os.Remove(s.Config.RuntimeDir + "/" + filename)
 	} else if s.Config.Storage == S3_STORAGE {
