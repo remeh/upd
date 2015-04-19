@@ -12,12 +12,14 @@ import (
 	"os"
 	"time"
 
+	"github.com/boltdb/bolt"
 	"github.com/gorilla/mux"
 )
 
 type Server struct {
 	Config   Config    // Configuration
 	Metadata Metadatas // Link to the read metadata
+	Database *bolt.DB  // opened bolt db
 }
 
 func NewServer(config Config) *Server {
@@ -40,6 +42,9 @@ func (s *Server) Start() {
 
 	// Setup the router on the net/http stack
 	http.Handle("/", router)
+
+	// Open the database
+	s.openBoltDatabase(true)
 
 	// Read the existing metadata.
 	s.readMetadata()
@@ -105,6 +110,28 @@ func (s *Server) readMetadata() {
 }
 
 func (s *Server) writeMetadata(printLog bool) {
+	// old behavior
+	s.writeFileMetadata(printLog)
+}
+
+// writeBoltMetadata stores the metadata in a BoltDB file.
+func (s *Server) openBoltDatabase(printLog bool) {
+	db, err := bolt.Open(s.Config.RuntimeDir+"/metadata.db", 0600, nil)
+	if err != nil {
+		log.Println("[err] Can't open the metadata.db file in :", s.Config.RuntimeDir)
+		log.Println(err)
+		os.Exit(1)
+	}
+
+	if printLog {
+		log.Printf("[info] %s opened.", s.Config.RuntimeDir+"/metadata.db")
+	}
+
+	s.Database = db
+}
+
+// writeMetadataFile stores the metadata in a json file.
+func (s *Server) writeFileMetadata(printLog bool) {
 	// TODO mutex!!
 	file, err := os.Create(s.Config.RuntimeDir + "/metadata.json")
 	if err != nil {
