@@ -156,20 +156,6 @@ func (s *SendHandler) addMetadata(name string, original string, tags []string, e
 		CreationTime:   now,
 	}
 
-	// FIXME this metadata file will be removed.
-	/*
-		s.Server.Metadata.Data[name] = metadata
-
-		// add the entry
-		s.Server.Metadata.LastUploaded = append([]string{name}, s.Server.Metadata.LastUploaded...)
-		// keep only 20 entries
-		limitMax := 19
-		if len(s.Server.Metadata.LastUploaded) < limitMax {
-			limitMax = len(s.Server.Metadata.LastUploaded)
-		}
-		s.Server.Metadata.LastUploaded = s.Server.Metadata.LastUploaded[0:limitMax]
-	*/
-
 	// marshal the object
 	data, err := json.Marshal(metadata)
 	if err != nil {
