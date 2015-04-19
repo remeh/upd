@@ -3,8 +3,6 @@
 package server
 
 import (
-	"encoding/json"
-	"log"
 	"net/http"
 	"time"
 )
@@ -29,22 +27,24 @@ func (l *LastUploadedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	lastUploaded := make([]LastUploadedResponse, len(l.Server.Metadata.LastUploaded))
-	for i, v := range l.Server.Metadata.LastUploaded {
-		entry := l.Server.Metadata.Data[v]
-		lastUploaded[i] = LastUploadedResponse{
-			Name:         entry.Filename,
-			Original:     entry.Original,
-			DeleteKey:    entry.DeleteKey,
-			CreationTime: entry.CreationTime,
+	/*
+		lastUploaded := make([]LastUploadedResponse, len(l.Server.Metadata.LastUploaded))
+		for i, v := range l.Server.Metadata.LastUploaded {
+			entry := l.Server.Metadata.Data[v]
+			lastUploaded[i] = LastUploadedResponse{
+				Name:         entry.Filename,
+				Original:     entry.Original,
+				DeleteKey:    entry.DeleteKey,
+				CreationTime: entry.CreationTime,
+			}
 		}
-	}
 
-	bytes, err := json.Marshal(lastUploaded)
-	if err != nil {
-		log.Println("[err] Can't marshal the list of last uploaded:", err.Error())
-		w.WriteHeader(500)
-	}
+		bytes, err := json.Marshal(lastUploaded)
+		if err != nil {
+			log.Println("[err] Can't marshal the list of last uploaded:", err.Error())
+			w.WriteHeader(500)
+		}
 
-	w.Write(bytes)
+		w.Write(bytes)
+	*/
 }

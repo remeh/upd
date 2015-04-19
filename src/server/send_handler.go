@@ -76,7 +76,14 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		name = s.randomString(8)
-		if s.Server.Metadata.Data[name].Filename == "" {
+		// test existence
+		entry, err := s.Server.GetEntry(name)
+		if err != nil {
+			log.Println("[err] While reading the database:", err.Error())
+			w.WriteHeader(500)
+			return
+		}
+		if entry.Filename == "" {
 			break
 		}
 	}
@@ -112,7 +119,6 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// add to metadata
 	deleteKey := s.randomString(16)
 	s.addMetadata(name, original, tags, expirationTime, ttl, deleteKey, now)
-	s.Server.writeMetadata(true)
 
 	// encode the response json
 	response := SendResponse{
@@ -151,16 +157,18 @@ func (s *SendHandler) addMetadata(name string, original string, tags []string, e
 	}
 
 	// FIXME this metadata file will be removed.
-	s.Server.Metadata.Data[name] = metadata
+	/*
+		s.Server.Metadata.Data[name] = metadata
 
-	// add the entry
-	s.Server.Metadata.LastUploaded = append([]string{name}, s.Server.Metadata.LastUploaded...)
-	// keep only 20 entries
-	limitMax := 19
-	if len(s.Server.Metadata.LastUploaded) < limitMax {
-		limitMax = len(s.Server.Metadata.LastUploaded)
-	}
-	s.Server.Metadata.LastUploaded = s.Server.Metadata.LastUploaded[0:limitMax]
+		// add the entry
+		s.Server.Metadata.LastUploaded = append([]string{name}, s.Server.Metadata.LastUploaded...)
+		// keep only 20 entries
+		limitMax := 19
+		if len(s.Server.Metadata.LastUploaded) < limitMax {
+			limitMax = len(s.Server.Metadata.LastUploaded)
+		}
+		s.Server.Metadata.LastUploaded = s.Server.Metadata.LastUploaded[0:limitMax]
+	*/
 
 	// marshal the object
 	data, err := json.Marshal(metadata)
@@ -179,9 +187,18 @@ func (s *SendHandler) addMetadata(name string, original string, tags []string, e
 	if err != nil {
 		log.Println("[err] Can't store")
 		log.Println(string(data))
-		log.Println("Reason: %s", err.Error())
+		log.Printf("[err] Reason: %s\n", err.Error())
 		return
 	}
 
-	// TODO store the entry in LastUploaded
+	// store the LastUploaded infos
+	err = s.Server.Database.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte("LastUploaded"))
+		return bucket.Put([]byte(now.String()), []byte(name))
+	})
+
+	if err != nil {
+		log.Printf("[err] Can't store the LastUploaded infos for %s, reason: %s\n", name, err.Error())
+		return
+	}
 }

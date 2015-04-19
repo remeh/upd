@@ -112,7 +112,12 @@ func (s *Server) ReadFile(filename string) ([]byte, error) {
 // and from the FS.
 func (s *Server) Expire(m Metadata) error {
 	filename := m.Filename
-	delete(s.Metadata.Data, filename)
+
+	// delete from the datbase
+	s.deleteMetadata(filename)
+
+	//delete(s.Metadata.Data, filename)
+
 	if s.Config.Storage == FS_STORAGE {
 		return os.Remove(s.Config.RuntimeDir + "/" + filename)
 	} else if s.Config.Storage == S3_STORAGE {

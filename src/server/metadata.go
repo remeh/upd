@@ -6,13 +6,6 @@ import (
 	"time"
 )
 
-type Metadatas struct {
-	CreationTime time.Time           `json:"creation_time"`
-	Storage      string              `json:"storage"` // Storage used with this metadata file.
-	Data         map[string]Metadata `json:"metadatas"`
-	LastUploaded []string            `json:"last_uploaded"` // stores the 20 last updated files id.
-}
-
 type Metadata struct {
 	Original       string    `json:"original"`        // original name of the file.
 	Filename       string    `json:"filename"`        // name of the file on the FS

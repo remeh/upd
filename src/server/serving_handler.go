@@ -5,7 +5,6 @@ package server
 
 import (
 	"bytes"
-	"encoding/json"
 	"image"
 	"image/jpeg"
 	"image/png"
@@ -15,7 +14,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/boltdb/bolt"
 	"github.com/gorilla/mux"
 	"github.com/nfnt/resize"
 )
@@ -41,7 +39,7 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Look for the file in BoltDB
-	entry, err := s.getEntry(id)
+	entry, err := s.Server.GetEntry(id)
 	if err != nil {
 		log.Println("[err] Error while retrieving an entry:", err.Error())
 		w.WriteHeader(500)
@@ -69,7 +67,6 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				log.Println(err)
 			} else {
 				log.Println("[info] Deleted due to TTL:", entry.Filename)
-				s.Server.writeMetadata(true)
 			}
 
 			w.WriteHeader(404)
@@ -113,29 +110,6 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set(HEADER_ORIGINAL_FILENAME, entry.Original)
 	w.Header().Set("Content-Disposition", "inline; filename*=UTF-8''"+url.QueryEscape(entry.Original))
 	w.Write(data)
-}
-
-// getEntry looks in the Bolt DB whether this entry exists and returns it
-// if found, otherwise, nil is returned.
-func (s *ServingHandler) getEntry(id string) (*Metadata, error) {
-	var metadata Metadata
-	err := s.Server.Database.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte("Metadata"))
-		v := bucket.Get([]byte(id))
-		if v == nil {
-			return nil
-		}
-
-		// unmarshal the bytes
-		err := json.Unmarshal(v, &metadata)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
-
-	return &metadata, err
 }
 
 func (s *ServingHandler) Resize(id string, contentType string, data []byte, width uint, height uint) []byte {
