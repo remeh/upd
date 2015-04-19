@@ -39,7 +39,7 @@ func (s *Server) Start() {
 	http.Handle("/", router)
 
 	// Open the database
-	s.openBoltDatabase(true)
+	s.openBoltDatabase()
 
 	go s.StartCleanJob()
 
@@ -65,7 +65,7 @@ func (s *Server) StartCleanJob() {
 }
 
 // writeBoltMetadata stores the metadata in a BoltDB file.
-func (s *Server) openBoltDatabase(printLog bool) {
+func (s *Server) openBoltDatabase() {
 	db, err := bolt.Open(s.Config.RuntimeDir+"/metadata.db", 0600, nil)
 	if err != nil {
 		log.Println("[err] Can't open the metadata.db file in :", s.Config.RuntimeDir)
@@ -73,9 +73,7 @@ func (s *Server) openBoltDatabase(printLog bool) {
 		os.Exit(1)
 	}
 
-	if printLog {
-		log.Printf("[info] %s opened.", s.Config.RuntimeDir+"/metadata.db")
-	}
+	log.Printf("[info] %s opened.", s.Config.RuntimeDir+"/metadata.db")
 
 	s.Database = db
 
@@ -91,10 +89,39 @@ func (s *Server) openBoltDatabase(printLog bool) {
 			log.Println("Can't create the bucket 'LastUploaded'")
 			log.Println(err)
 		}
+		_, err = tx.CreateBucketIfNotExists([]byte("Config"))
+		if err != nil {
+			log.Println("Can't create the bucket 'LastUploaded'")
+			log.Println(err)
+		}
 		return err
 	})
 
-	// TODO test the storage
+	// test that the storage is still the same
+	var mustSave bool
+	s.Database.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte("Config"))
+		v := bucket.Get([]byte("storage"))
+		if v == nil {
+			mustSave = true
+			return nil
+		}
+
+		if string(v) != s.Config.Storage {
+			log.Printf("The database use the storage %s, can't start with the storage %s\n", string(v), s.Config.Storage)
+			os.Exit(1)
+		}
+		return nil
+	})
+
+	// save the storage
+	if mustSave {
+		s.Database.Update(func(tx *bolt.Tx) error {
+			bucket := tx.Bucket([]byte("Config"))
+			bucket.Put([]byte("storage"), []byte(s.Config.Storage))
+			return nil
+		})
+	}
 }
 
 func (s *Server) deleteMetadata(name string) error {
