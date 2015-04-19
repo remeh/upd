@@ -128,6 +128,21 @@ func (s *Server) openBoltDatabase(printLog bool) {
 	}
 
 	s.Database = db
+
+	// creates the bucket if needed
+	db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte("Metadata"))
+		if err != nil {
+			log.Println("Can't create the bucket 'Metadata'")
+			log.Println(err)
+		}
+		_, err = tx.CreateBucketIfNotExists([]byte("LastUploaded"))
+		if err != nil {
+			log.Println("Can't create the bucket 'LastUploaded'")
+			log.Println(err)
+		}
+		return err
+	})
 }
 
 // writeMetadataFile stores the metadata in a json file.

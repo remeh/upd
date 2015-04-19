@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/boltdb/bolt"
 )
 
 type SendHandler struct {
@@ -147,6 +149,8 @@ func (s *SendHandler) addMetadata(name string, original string, tags []string, e
 		DeleteKey:      key,
 		CreationTime:   now,
 	}
+
+	// FIXME this metadata file will be removed.
 	s.Server.Metadata.Data[name] = metadata
 
 	// add the entry
@@ -157,4 +161,25 @@ func (s *SendHandler) addMetadata(name string, original string, tags []string, e
 		limitMax = len(s.Server.Metadata.LastUploaded)
 	}
 	s.Server.Metadata.LastUploaded = s.Server.Metadata.LastUploaded[0:limitMax]
+
+	// marshal the object
+	data, err := json.Marshal(metadata)
+	if err != nil {
+		log.Println("[err] Can't marshal an object to store it")
+		log.Println(err)
+		return
+	}
+
+	// store into BoltDB
+	err = s.Server.Database.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte("Metadata"))
+		return bucket.Put([]byte(name), data)
+	})
+
+	if err != nil {
+		log.Println("[err] Can't store")
+		log.Println(string(data))
+		log.Println("Reason: %s", err.Error())
+		return
+	}
 }
