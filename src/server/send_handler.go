@@ -182,4 +182,6 @@ func (s *SendHandler) addMetadata(name string, original string, tags []string, e
 		log.Println("Reason: %s", err.Error())
 		return
 	}
+
+	// TODO store the entry in LastUploaded
 }
