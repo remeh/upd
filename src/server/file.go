@@ -11,9 +11,17 @@ import (
 	"os"
 	"time"
 
-	"github.com/awslabs/aws-sdk-go/aws"
-	"github.com/awslabs/aws-sdk-go/gen/s3"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
+
+func (s *Server) createS3Config(creds *credentials.Credentials, region string) *aws.Config {
+	return &aws.Config{
+		Credentials: creds,
+		Region:      region,
+	}
+}
 
 // writeFile deals with writing the file, using the flags
 // to know where and the filename / data to store it.
@@ -39,12 +47,12 @@ func (s *Server) WriteFile(filename string, data []byte) error {
 		return nil
 	} else if s.Config.Storage == S3_STORAGE {
 		// S3 connection
-		creds := aws.Creds(s.Config.S3Config.AccessKey, s.Config.S3Config.AccessSecret, "")
-		client := s3.New(creds, s.Config.S3Config.Region, nil)
-		body := ioutil.NopCloser(bytes.NewBuffer(data))
+		creds := credentials.NewStaticCredentials(s.Config.S3Config.AccessKey, s.Config.S3Config.AccessSecret, "")
+		client := s3.New(s.createS3Config(creds, s.Config.S3Config.Region))
+		body := bytes.NewReader(data)
 
 		// Creates the S3 put request
-		por := &s3.PutObjectRequest{
+		por := &s3.PutObjectInput{
 			Body:          body,
 			Key:           aws.String(filename),
 			ContentLength: aws.Long(int64(len(data))),
@@ -52,9 +60,9 @@ func (s *Server) WriteFile(filename string, data []byte) error {
 		}
 
 		// Sends the S3 put request
-		_, err := client.PutObject(por)
-		if err != nil {
-			return err
+		r, _ := client.PutObjectRequest(por)
+		if r.Error != nil {
+			return r.Error
 		}
 	}
 
@@ -79,23 +87,23 @@ func (s *Server) ReadFile(filename string) ([]byte, error) {
 		return data, nil
 	} else if s.Config.Storage == S3_STORAGE {
 		// S3 connection
-		creds := aws.Creds(s.Config.S3Config.AccessKey, s.Config.S3Config.AccessSecret, "")
-		client := s3.New(creds, s.Config.S3Config.Region, nil)
+		creds := credentials.NewStaticCredentials(s.Config.S3Config.AccessKey, s.Config.S3Config.AccessSecret, "")
+		client := s3.New(s.createS3Config(creds, s.Config.S3Config.Region))
 
 		// The get request
-		gor := &s3.GetObjectRequest{
+		gor := &s3.GetObjectInput{
 			Key:    aws.String(filename),
 			Bucket: aws.String(s.Config.S3Config.Bucket),
 		}
 
 		// Sends the request
-		resp, err := client.GetObject(gor)
-		if err != nil {
-			return nil, err
+		resp, out := client.GetObjectRequest(gor)
+		if resp.Error != nil {
+			return nil, resp.Error
 		}
 
 		// Reads the result
-		data, err := ioutil.ReadAll(resp.Body)
+		data, err := ioutil.ReadAll(out.Body)
 		if err != nil {
 			log.Println("[err] Can't read the body of a GetObjectOutput from AWS")
 			log.Println(err)
@@ -129,18 +137,18 @@ func (s *Server) Expire(m Metadata) error {
 		return os.Remove(s.Config.RuntimeDir + "/" + filename)
 	} else if s.Config.Storage == S3_STORAGE {
 		// S3 connection
-		creds := aws.Creds(s.Config.S3Config.AccessKey, s.Config.S3Config.AccessSecret, "")
-		client := s3.New(creds, s.Config.S3Config.Region, nil)
+		creds := credentials.NewStaticCredentials(s.Config.S3Config.AccessKey, s.Config.S3Config.AccessSecret, "")
+		client := s3.New(s.createS3Config(creds, s.Config.S3Config.Region))
 
 		// The get request
-		dor := &s3.DeleteObjectRequest{
+		dor := &s3.DeleteObjectInput{
 			Key:    aws.String(filename),
 			Bucket: aws.String(s.Config.S3Config.Bucket),
 		}
 
-		_, err := client.DeleteObject(dor)
-		if err != nil {
-			return err
+		req, _ := client.DeleteObjectRequest(dor)
+		if req.Error != nil {
+			return req.Error
 		}
 
 		return nil
