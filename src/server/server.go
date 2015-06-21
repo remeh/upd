@@ -5,6 +5,7 @@ package server
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -41,6 +42,8 @@ func (s *Server) Start() {
 	// Open the database
 	s.openBoltDatabase()
 
+	s.convertMetadata()
+
 	go s.StartCleanJob()
 
 	// Listen
@@ -64,7 +67,35 @@ func (s *Server) StartCleanJob() {
 	}
 }
 
-// writeBoltMetadata stores the metadata in a BoltDB file.
+// readMetadata reads an old .json metadata file.
+// Deprecataed.
+func (s *Server) convertMetadata() {
+	file, err := os.Open(s.Config.RuntimeDir + "/metadata.json")
+	if err != nil {
+		log.Printf("[err] Can't find %s", s.Config.RuntimeDir+"/metadata.json")
+		os.Exit(1)
+	}
+
+	defer file.Close()
+
+	readData, err := ioutil.ReadAll(file)
+	var data Metadatas
+	json.Unmarshal(readData, &data)
+
+	// save each entry in the boltdb database.
+	sendHandler := SendHandler{Server: s}
+
+	log.Println("[info] Start of .json -> .db processing.")
+
+	for _, m := range data.Data {
+		log.Printf("[info] %s processed.", m.Original)
+		sendHandler.addMetadata(m.Filename, m.Original, m.Tags, m.ExpirationTime, m.TTL, m.DeleteKey, m.CreationTime)
+	}
+
+	log.Println("[info] End of .json -> .db processing.")
+}
+
+// openBoltDatabase opens an existing database.
 func (s *Server) openBoltDatabase() {
 	db, err := bolt.Open(s.Config.RuntimeDir+"/metadata.db", 0600, nil)
 	if err != nil {

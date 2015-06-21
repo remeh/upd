@@ -15,3 +15,10 @@ type Metadata struct {
 	DeleteKey      string    `json:"delete_key"`      // The key to delete this file.
 	CreationTime   time.Time `json:"creation_time"`
 }
+
+type Metadatas struct {
+	CreationTime time.Time           `json:"creation_time"`
+	Storage      string              `json:"storage"` // Storage used with this metadata file.
+	Data         map[string]Metadata `json:"metadatas"`
+	LastUploaded []string            `json:"last_uploaded"` // stores the 20 last updated files id.
+}
