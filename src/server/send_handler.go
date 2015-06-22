@@ -114,7 +114,9 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// writes the data on the storage
-	s.Server.WriteFile(name, data)
+	if err := s.Server.WriteFile(name, data); err != nil {
+		log.Println(err)
+	}
 
 	// add to metadata
 	deleteKey := s.randomString(16)
