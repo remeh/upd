@@ -27,6 +27,24 @@ func (s *Server) createS3Config(creds *credentials.Credentials, region string) *
 // to know where and the filename / data to store it.
 func (s *Server) WriteFile(filename string, data []byte) error {
 	if s.Config.Storage == FS_STORAGE {
+		fi, err := os.Stat(s.Config.FSConfig.OutputDirectory)
+		if err != nil && !os.IsNotExist(err) {
+			log.Println("[err] Error while stat'ing the output directory ", s.Config.FSConfig.OutputDirectory)
+			return err
+		}
+
+		if os.IsNotExist(err) {
+			err = os.MkdirAll(s.Config.FSConfig.OutputDirectory, 0755)
+			if err != nil {
+				log.Println("[err] Error while creating the output directory", s.Config.FSConfig.OutputDirectory)
+				return err
+			}
+		}
+
+		if fi != nil && !fi.IsDir() {
+			return fmt.Errorf("%s is not a directory", s.Config.FSConfig.OutputDirectory)
+		}
+
 		file, err := os.Create(s.Config.FSConfig.OutputDirectory + "/" + filename)
 		if err != nil {
 			log.Println("[err] Can't create the file to write: ", filename)
