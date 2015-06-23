@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -125,7 +126,7 @@ func (s *Server) Expire(m Metadata) error {
 	s.deleteMetadata(filename)
 
 	if s.Config.Storage == FS_STORAGE {
-		return os.Remove(s.Config.RuntimeDir + "/" + filename)
+		return os.Remove(filepath.Join(s.Config.FSConfig.OutputDirectory, filename))
 	} else if s.Config.Storage == S3_STORAGE {
 		// S3 connection
 		creds := credentials.NewStaticCredentials(s.Config.S3Config.AccessKey, s.Config.S3Config.AccessSecret, "")
