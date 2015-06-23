@@ -60,9 +60,9 @@ func (s *Server) WriteFile(filename string, data []byte) error {
 		}
 
 		// Sends the S3 put request
-		r, _ := client.PutObjectRequest(por)
-		if r.Error != nil {
-			return r.Error
+		_, err := client.PutObject(por)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -97,13 +97,13 @@ func (s *Server) ReadFile(filename string) ([]byte, error) {
 		}
 
 		// Sends the request
-		resp, out := client.GetObjectRequest(gor)
-		if resp.Error != nil {
-			return nil, resp.Error
+		resp, err := client.GetObject(gor)
+		if err != nil {
+			return nil, err
 		}
 
 		// Reads the result
-		data, err := ioutil.ReadAll(out.Body)
+		data, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Println("[err] Can't read the body of a GetObjectOutput from AWS")
 			log.Println(err)
@@ -137,9 +137,9 @@ func (s *Server) Expire(m Metadata) error {
 			Bucket: aws.String(s.Config.S3Config.Bucket),
 		}
 
-		req, _ := client.DeleteObjectRequest(dor)
-		if req.Error != nil {
-			return req.Error
+		_, err := client.DeleteObject(dor)
+		if err != nil {
+			return err
 		}
 
 		return nil
