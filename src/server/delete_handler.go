@@ -27,8 +27,13 @@ func (s *DeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Existing file ?
-	entry := s.Server.Metadata.Data[id]
-	if entry.Filename == "" {
+	entry, err := s.Server.GetEntry(id)
+	if err != nil {
+		log.Println("Can't use the database:", err.Error())
+		w.WriteHeader(500)
+		return
+	}
+	if entry == nil {
 		w.WriteHeader(404)
 		return
 	}
@@ -40,7 +45,7 @@ func (s *DeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// deletes the file
-	err := s.Server.Expire(entry)
+	err = s.Server.Expire(*entry)
 	if err != nil {
 		log.Println("[err] While deleting the entry:", entry.Filename)
 		log.Println(err)
@@ -48,8 +53,10 @@ func (s *DeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Re-save the metadata
-	s.Server.writeMetadata(true)
+	/*
+		// Re-save the metadata
+		s.Server.writeMetadata(true)
+	*/
 
 	w.WriteHeader(200)
 	w.Write([]byte("File deleted."))

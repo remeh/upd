@@ -5,19 +5,20 @@ package server
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/boltdb/bolt"
 	"github.com/gorilla/mux"
 )
 
 type Server struct {
-	Config   Config    // Configuration
-	Metadata Metadatas // Link to the read metadata
+	Config   Config   // Configuration
+	Database *bolt.DB // opened bolt db
+	Storage  string   // Storage used with this metadata file.
 }
 
 func NewServer(config Config) *Server {
@@ -25,12 +26,8 @@ func NewServer(config Config) *Server {
 	rand.Seed(time.Now().Unix())
 
 	return &Server{
-		Config: config,
-		Metadata: Metadatas{
-			Storage:      config.Storage,
-			CreationTime: time.Now(),
-			Data:         make(map[string]Metadata),
-		},
+		Config:  config,
+		Storage: config.Storage,
 	}
 }
 
@@ -41,8 +38,8 @@ func (s *Server) Start() {
 	// Setup the router on the net/http stack
 	http.Handle("/", router)
 
-	// Read the existing metadata.
-	s.readMetadata()
+	// Open the database
+	s.openBoltDatabase()
 
 	go s.StartCleanJob()
 
@@ -67,58 +64,110 @@ func (s *Server) StartCleanJob() {
 	}
 }
 
-// Reads the stored metadata.
-func (s *Server) readMetadata() {
-	file, err := os.Open(s.Config.RuntimeDir + "/metadata.json")
-	create := false
+// writeBoltMetadata stores the metadata in a BoltDB file.
+func (s *Server) openBoltDatabase() {
+	db, err := bolt.Open(s.Config.RuntimeDir+"/metadata.db", 0600, nil)
 	if err != nil {
-		create = true
-	}
-
-	if create {
-		// Create the file
-		log.Println("[info] Creating metadata.json")
-		s.writeMetadata(true)
-	} else {
-		// Read the file
-		log.Println("[info] Reading metadata.json")
-
-		readData, err := ioutil.ReadAll(file)
-		if err != nil {
-			log.Println("[err] The existing metadata.json seems corrupted. Exiting.")
-			log.Println(err)
-			os.Exit(1)
-		}
-
-		var data Metadatas
-		json.Unmarshal(readData, &data)
-		s.Metadata = data
-		log.Printf("[info] %d metadata read.\n", len(s.Metadata.Data))
-
-		if data.Storage != s.Config.Storage {
-			log.Printf("[err] This metadata file has been created with the storage '%s' and upd is launched with storage '%s'.", data.Storage, s.Config.Storage)
-			log.Println("[err] Can't start the daemon with this inconsistency")
-			os.Exit(1)
-		}
-		file.Close()
-	}
-}
-
-func (s *Server) writeMetadata(printLog bool) {
-	// TODO mutex!!
-	file, err := os.Create(s.Config.RuntimeDir + "/metadata.json")
-	if err != nil {
-		log.Println("[err] Can't write in the output directory:", s.Config.RuntimeDir)
+		log.Println("[err] Can't open the metadata.db file in :", s.Config.RuntimeDir)
 		log.Println(err)
 		os.Exit(1)
 	}
-	data, _ := json.Marshal(s.Metadata)
-	file.Write(data)
-	file.Close()
 
-	if printLog {
-		log.Printf("[info] %d metadatas written.\n", len(s.Metadata.Data))
+	log.Printf("[info] %s opened.", s.Config.RuntimeDir+"/metadata.db")
+
+	s.Database = db
+
+	// creates the bucket if needed
+	db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte("Metadata"))
+		if err != nil {
+			log.Println("Can't create the bucket 'Metadata'")
+			log.Println(err)
+		}
+		_, err = tx.CreateBucketIfNotExists([]byte("LastUploaded"))
+		if err != nil {
+			log.Println("Can't create the bucket 'LastUploaded'")
+			log.Println(err)
+		}
+		_, err = tx.CreateBucketIfNotExists([]byte("Config"))
+		if err != nil {
+			log.Println("Can't create the bucket 'LastUploaded'")
+			log.Println(err)
+		}
+		return err
+	})
+
+	// test that the storage is still the same
+	var mustSave bool
+	s.Database.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte("Config"))
+		v := bucket.Get([]byte("storage"))
+		if v == nil {
+			mustSave = true
+			return nil
+		}
+
+		if string(v) != s.Config.Storage {
+			log.Printf("The database use the storage %s, can't start with the storage %s\n", string(v), s.Config.Storage)
+			os.Exit(1)
+		}
+		return nil
+	})
+
+	// save the storage
+	if mustSave {
+		s.Database.Update(func(tx *bolt.Tx) error {
+			bucket := tx.Bucket([]byte("Config"))
+			bucket.Put([]byte("storage"), []byte(s.Config.Storage))
+			return nil
+		})
 	}
+}
+
+func (s *Server) deleteMetadata(name string) error {
+	// remove from last uploaded
+	entry, err := s.GetEntry(name)
+	if err != nil {
+		return err
+	}
+	err = s.Database.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte("LastUploaded"))
+		return bucket.Delete([]byte(entry.CreationTime.String()))
+	})
+
+	err = s.Database.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte("Metadata"))
+		return bucket.Delete([]byte(name))
+	})
+	if err != nil {
+		log.Println("Can't delete some metadata from the database:")
+		log.Println(err)
+	}
+
+	return err
+}
+
+// getEntry looks in the Bolt DB whether this entry exists and returns it
+// if found, otherwise, nil is returned.
+func (s *Server) GetEntry(id string) (*Metadata, error) {
+	var metadata Metadata
+	err := s.Database.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte("Metadata"))
+		v := bucket.Get([]byte(id))
+		if v == nil {
+			return nil
+		}
+
+		// unmarshal the bytes
+		err := json.Unmarshal(v, &metadata)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return &metadata, err
 }
 
 // Prepares the route

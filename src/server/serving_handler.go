@@ -38,8 +38,15 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Look for the file in BoltDB
+	entry, err := s.Server.GetEntry(id)
+	if err != nil {
+		log.Println("[err] Error while retrieving an entry:", err.Error())
+		w.WriteHeader(500)
+		return
+	}
+
 	// Existing file ?
-	entry := s.Server.Metadata.Data[id]
 	if entry.Filename == "" {
 		w.WriteHeader(404)
 		return
@@ -54,13 +61,12 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		fileEndlife := entry.CreationTime.Add(duration)
 		if fileEndlife.Before(now) {
 			// No longer alive!
-			err := s.Server.Expire(entry)
+			err := s.Server.Expire(*entry)
 			if err != nil {
 				log.Println("[warn] While deleting file:", entry.Filename)
 				log.Println(err)
 			} else {
 				log.Println("[info] Deleted due to TTL:", entry.Filename)
-				s.Server.writeMetadata(true)
 			}
 
 			w.WriteHeader(404)

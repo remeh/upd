@@ -5,8 +5,11 @@
 package server
 
 import (
+	"encoding/json"
 	"log"
 	"time"
+
+	"github.com/boltdb/bolt"
 )
 
 type CleanJob struct {
@@ -17,20 +20,33 @@ type CleanJob struct {
 // checking their TTL.
 func (j CleanJob) Run() {
 	somethingChanged := false
-	for _, entry := range j.server.Metadata.Data {
-		if !entry.ExpirationTime.IsZero() && entry.ExpirationTime.Before(time.Now()) {
-			// No longer alive!
-			err := j.server.Expire(entry)
-			somethingChanged = true
+
+	j.server.Database.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("Metadata"))
+		c := b.Cursor()
+
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			// unmarshal
+			var entry Metadata
+			err := json.Unmarshal(v, &entry)
 			if err != nil {
-				log.Println("[warn] While deleting file:", entry.Filename)
-				log.Println(err)
-			} else {
-				log.Println("[info] Deleted due to TTL:", entry.Filename)
+				log.Println("[err] Can't read a metadata:", err.Error())
+				continue
+			}
+
+			if !entry.ExpirationTime.IsZero() && entry.ExpirationTime.Before(time.Now()) {
+				// No longer alive!
+				err := j.server.Expire(entry)
+				somethingChanged = true
+				if err != nil {
+					log.Println("[warn] While deleting file:", entry.Filename)
+					log.Println(err)
+				} else {
+					log.Println("[info] Deleted due to TTL:", entry.Filename)
+				}
 			}
 		}
-	}
-	if somethingChanged {
-		j.server.writeMetadata(true)
-	}
+
+		return nil
+	})
 }

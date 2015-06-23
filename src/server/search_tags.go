@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/boltdb/bolt"
 )
 
 type SearchTagsHandler struct {
@@ -54,19 +56,34 @@ func (l *SearchTagsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// At the moment, without a 'database' system, we must
 	// look in every entries to find if some have the tags.
 	response := SearchTagsResponse{Results: make([]SearchTagsEntryResponse, 0)}
-	for _, v := range l.Server.Metadata.Data {
-		if stringArrayContainsOne(v.Tags, tags) {
-			entry := SearchTagsEntryResponse{
-				Filename:       v.Filename,
-				Original:       v.Original,
-				CreationTime:   v.CreationTime,
-				DeleteKey:      v.DeleteKey,
-				ExpirationTime: v.ExpirationTime,
-				Tags:           v.Tags,
+
+	l.Server.Database.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("Metadata"))
+		c := b.Cursor()
+
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			// unmarshal
+			var metadata Metadata
+			err := json.Unmarshal(v, &metadata)
+			if err != nil {
+				log.Println("[err] Can't read a metadata:", err.Error())
+				continue
 			}
-			response.Results = append(response.Results, entry)
+
+			if stringArrayContainsOne(metadata.Tags, tags) {
+				entry := SearchTagsEntryResponse{
+					Filename:       metadata.Filename,
+					Original:       metadata.Original,
+					CreationTime:   metadata.CreationTime,
+					DeleteKey:      metadata.DeleteKey,
+					ExpirationTime: metadata.ExpirationTime,
+					Tags:           metadata.Tags,
+				}
+				response.Results = append(response.Results, entry)
+			}
 		}
-	}
+		return nil
+	})
 
 	bytes, err := json.Marshal(response)
 	if err != nil {
