@@ -5,6 +5,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
@@ -13,6 +14,10 @@ import (
 
 	"github.com/boltdb/bolt"
 	"github.com/gorilla/mux"
+)
+
+const (
+	LAST_UPLOADED_KEY = "LastUploaded"
 )
 
 type Server struct {
@@ -84,9 +89,9 @@ func (s *Server) openBoltDatabase() {
 			log.Println("Can't create the bucket 'Metadata'")
 			log.Println(err)
 		}
-		_, err = tx.CreateBucketIfNotExists([]byte("LastUploaded"))
+		_, err = tx.CreateBucketIfNotExists([]byte("Runtime"))
 		if err != nil {
-			log.Println("Can't create the bucket 'LastUploaded'")
+			log.Println("Can't create the bucket 'Runtime'")
 			log.Println(err)
 		}
 		_, err = tx.CreateBucketIfNotExists([]byte("Config"))
@@ -170,10 +175,42 @@ func (s *Server) GetEntry(id string) (*Metadata, error) {
 	return &metadata, err
 }
 
+// GetLastUploaded reads into BoltDB the array
+// of last uploaded entries.
+func (s *Server) GetLastUploaded() ([]string, error) {
+	values := make([]string, 0)
+	err := s.Database.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte("Runtime"))
+		v := bucket.Get([]byte(LAST_UPLOADED_KEY))
+
+		if v == nil {
+			return nil
+		}
+
+		err := json.Unmarshal(v, &values)
+		return err
+	})
+
+	return values, err
+}
+
+func (s *Server) SetLastUploaded(lastUploaded []string) error {
+	return s.Database.Update(func(tx *bolt.Tx) error {
+		d, err := json.Marshal(lastUploaded)
+		if err != nil {
+			return err
+		}
+
+		bucket := tx.Bucket([]byte("Runtime"))
+		return bucket.Put([]byte(LAST_UPLOADED_KEY), d)
+	})
+}
+
 // Prepares the route
 func (s *Server) prepareRouter() *mux.Router {
 	r := mux.NewRouter()
 
+	println(s.Config.Route)
 	sendHandler := &SendHandler{s}
 	r.Handle(s.Config.Route+"/1.0/send", sendHandler)
 

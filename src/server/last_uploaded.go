@@ -3,13 +3,14 @@
 package server
 
 import (
-	"bytes"
 	"encoding/json"
 	"log"
 	"net/http"
 	"time"
+)
 
-	"github.com/boltdb/bolt"
+const (
+	MAX_LAST_UPLOADED = 20
 )
 
 type LastUploadedHandler struct {
@@ -32,34 +33,30 @@ func (l *LastUploadedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	lastUploaded := make([]LastUploadedResponse, 0)
-	l.Server.Database.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("LastUploaded"))
-		c := b.Cursor()
+	lastUploadedResp := make([]LastUploadedResponse, 0)
+	lastUploaded, err := l.Server.GetLastUploaded()
+	if err != nil {
+		log.Println("[err] can't retrieve the last uploaded ids:", err.Error())
+		w.WriteHeader(500)
+		return
+	}
 
-		min := []byte("1990-01-01T00:00:00Z")
-		max := []byte(time.Now().String())
-
-		for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) >= 0; k, v = c.Next() {
-			// unmarshal
-			var metadata Metadata
-			err := json.Unmarshal(v, &metadata)
-			if err != nil {
-				log.Println("[err] Can't read a metadata:", err.Error())
-				continue
-			}
-
-			lastUploaded = append(lastUploaded, LastUploadedResponse{
-				Name:         metadata.Filename,
-				Original:     metadata.Original,
-				DeleteKey:    metadata.DeleteKey,
-				CreationTime: metadata.CreationTime,
-			})
+	for _, id := range lastUploaded {
+		metadata, err := l.Server.GetEntry(id)
+		if err != nil {
+			log.Println("[err] Error while retrieving an entry in LastUploaded handler:", err.Error())
+			continue
 		}
-		return nil
-	})
 
-	bytes, err := json.Marshal(lastUploaded)
+		lastUploadedResp = append(lastUploadedResp, LastUploadedResponse{
+			Name:         metadata.Filename,
+			Original:     metadata.Original,
+			DeleteKey:    metadata.DeleteKey,
+			CreationTime: metadata.CreationTime,
+		})
+	}
+
+	bytes, err := json.Marshal(lastUploadedResp)
 	if err != nil {
 		log.Println("[err] Can't marshal the list of last uploaded:", err.Error())
 		w.WriteHeader(500)

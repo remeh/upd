@@ -180,10 +180,18 @@ func (s *SendHandler) addMetadata(name string, original string, tags []string, e
 	}
 
 	// store the LastUploaded infos
-	err = s.Server.Database.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte("LastUploaded"))
-		return bucket.Put([]byte(now.String()), []byte(name))
-	})
+	lastUploaded, err := s.Server.GetLastUploaded()
+	if err != nil {
+		log.Println("[err] Can't read the last uploaded in send handler:", err.Error())
+		return
+	}
+
+	lastUploaded = append([]string{name}, lastUploaded[:]...)
+	if len(lastUploaded) > MAX_LAST_UPLOADED {
+		lastUploaded = lastUploaded[:len(lastUploaded)-1]
+	}
+
+	s.Server.SetLastUploaded(lastUploaded)
 
 	if err != nil {
 		log.Printf("[err] Can't store the LastUploaded infos for %s, reason: %s\n", name, err.Error())
