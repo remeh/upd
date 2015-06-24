@@ -19,7 +19,7 @@ type CleanJob struct {
 // Run deals with cleaning the expired files by
 // checking their TTL.
 func (j CleanJob) Run() {
-	somethingChanged := false
+	var entries []Metadata
 
 	j.server.Database.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("Metadata"))
@@ -35,18 +35,23 @@ func (j CleanJob) Run() {
 			}
 
 			if !entry.ExpirationTime.IsZero() && entry.ExpirationTime.Before(time.Now()) {
-				// No longer alive!
-				err := j.server.Expire(entry)
-				somethingChanged = true
-				if err != nil {
-					log.Println("[warn] While deleting file:", entry.Filename)
-					log.Println(err)
-				} else {
-					log.Println("[info] Deleted due to TTL:", entry.Filename)
-				}
+				entries = append(entries, entry)
 			}
 		}
 
 		return nil
 	})
+
+	for _, entry := range entries {
+		// No longer alive!
+		err := j.server.Expire(entry)
+		if err != nil {
+			log.Println("[warn] While deleting file:", entry.Filename)
+			log.Println(err)
+		} else {
+			log.Println("[info] Deleted due to TTL:", entry.Filename)
+		}
+	}
+
+	log.Println("[info] Done cleaning")
 }
