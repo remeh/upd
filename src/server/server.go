@@ -129,17 +129,7 @@ func (s *Server) openBoltDatabase() {
 }
 
 func (s *Server) deleteMetadata(name string) error {
-	// remove from last uploaded
-	entry, err := s.GetEntry(name)
-	if err != nil {
-		return err
-	}
-	err = s.Database.Update(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte("LastUploaded"))
-		return bucket.Delete([]byte(entry.CreationTime.String()))
-	})
-
-	err = s.Database.Update(func(tx *bolt.Tx) error {
+	err := s.Database.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("Metadata"))
 		return bucket.Delete([]byte(name))
 	})

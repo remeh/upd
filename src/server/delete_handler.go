@@ -53,11 +53,31 @@ func (s *DeleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	/*
-		// Re-save the metadata
-		s.Server.writeMetadata(true)
-	*/
+	// we must remove the line from the LastUploaded
+	lastUploaded, err := s.Server.GetLastUploaded()
+	if err != nil {
+		log.Println("[err] Can't retrieve the last uploaded when deleting.")
+		w.WriteHeader(500)
+		return
+	}
+
+	lastUploaded = s.removeFromLastUploaded(lastUploaded, id)
+
+	s.Server.SetLastUploaded(lastUploaded)
 
 	w.WriteHeader(200)
 	w.Write([]byte("File deleted."))
+}
+
+func (s *DeleteHandler) removeFromLastUploaded(lastUploaded []string, id string) []string {
+	result := make([]string, 0)
+
+	for _, lu := range lastUploaded {
+		if lu == id {
+			continue
+		}
+		result = append(result, lu)
+	}
+
+	return result
 }
