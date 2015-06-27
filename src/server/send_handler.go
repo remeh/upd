@@ -115,12 +115,18 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// writes the data on the storage
 	if err := s.Server.WriteFile(name, data); err != nil {
-		log.Println(err)
+		log.Println("[err] unable to write file to storage", err)
+		w.WriteHeader(500)
+		return
 	}
 
 	// add to metadata
 	deleteKey := s.randomString(16)
-	s.addMetadata(name, original, tags, expirationTime, ttl, deleteKey, now)
+	if err := s.addMetadata(name, original, tags, expirationTime, ttl, deleteKey, now); err != nil {
+		log.Println("[err] unable to add metadata", err)
+		w.WriteHeader(500)
+		return
+	}
 
 	// encode the response json
 	response := SendResponse{
@@ -147,7 +153,7 @@ func (s *SendHandler) randomString(size int) string {
 }
 
 // addMetadata adds the given entry to the Server metadata information.
-func (s *SendHandler) addMetadata(name string, original string, tags []string, expirationTime time.Time, ttl string, key string, now time.Time) {
+func (s *SendHandler) addMetadata(name string, original string, tags []string, expirationTime time.Time, ttl string, key string, now time.Time) error {
 	metadata := Metadata{
 		Filename:       name,
 		Original:       original,
@@ -161,9 +167,8 @@ func (s *SendHandler) addMetadata(name string, original string, tags []string, e
 	// marshal the object
 	data, err := json.Marshal(metadata)
 	if err != nil {
-		log.Println("[err] Can't marshal an object to store it")
-		log.Println(err)
-		return
+		log.Println("[err] Can't marshal an object to store it", err)
+		return err
 	}
 
 	// store into BoltDB
@@ -176,14 +181,14 @@ func (s *SendHandler) addMetadata(name string, original string, tags []string, e
 		log.Println("[err] Can't store")
 		log.Println(string(data))
 		log.Printf("[err] Reason: %s\n", err.Error())
-		return
+		return err
 	}
 
 	// store the LastUploaded infos
 	lastUploaded, err := s.Server.GetLastUploaded()
 	if err != nil {
 		log.Println("[err] Can't read the last uploaded in send handler:", err.Error())
-		return
+		return err
 	}
 
 	lastUploaded = append([]string{name}, lastUploaded[:]...)
@@ -195,6 +200,8 @@ func (s *SendHandler) addMetadata(name string, original string, tags []string, e
 
 	if err != nil {
 		log.Printf("[err] Can't store the LastUploaded infos for %s, reason: %s\n", name, err.Error())
-		return
+		return err
 	}
+
+	return nil
 }
