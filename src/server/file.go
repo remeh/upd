@@ -83,6 +83,7 @@ func (s *Server) WriteFile(filename string, data []byte) error {
 		if err != nil {
 			return err
 		}
+		return nil
 	}
 
 	return fmt.Errorf("[err] Unsupported storage: %s", s.Config.Storage)
