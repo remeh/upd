@@ -1,0 +1,5 @@
+# The secret key to identify the client. (optional)
+secret_key = ""
+
+# The URL of the server
+server_url = ""

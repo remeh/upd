@@ -6,30 +6,68 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/BurntSushi/toml"
+	"github.com/vrischmann/userdir"
+
 	"client"
 )
 
-type Client struct {
+type config struct {
+	ServerURL string `toml:"server_url"`
+	SecretKey string `toml:"secret_key"`
 }
 
-func parseFlags() (client.Flags, error) {
-	var flags client.Flags
+var conf config
+var flags client.Flags
 
-	// Declare the flags
+const (
+	defaultServerURL = "http://localhost:9000/upd"
+)
+
+func init() {
 	flag.StringVar(&(flags.CA), "ca", "none", "For HTTPS support: none / filename of an accepted CA / unsafe (doesn't check the CA)")
-	flag.StringVar(&(flags.ServerUrl), "url", "http://localhost:9000/upd", "The server to contact")
+	flag.StringVar(&(flags.ServerUrl), "url", defaultServerURL, "The server to contact")
 	flag.StringVar(&(flags.SecretKey), "key", "", "A shared secret key to identify the client.")
 	flag.StringVar(&(flags.TTL), "ttl", "", `TTL after which the file expires, ex: 30m. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"`)
 	flag.StringVar(&(flags.SearchTags), "search-tags", "", "Search by tags. If many, must be separated by a comma, an 'or' operator is used. Ex: \"may,screenshot\".")
 	flag.Var(&flags.Tags, "tags", "Tags to attach to the file, separated by a comma. Ex: \"screenshot,may\"")
+}
 
-	// Read them
+func parseConfig() error {
+	path := filepath.Join(userdir.GetConfigHome(), "upd", "client.conf")
+
+	fi, err := os.Stat(path)
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+
+	if fi.IsDir() {
+		return fmt.Errorf("%s is a directory, not a file", path)
+	}
+
+	// If the file does not exist quit as it's not an error
+	if os.IsNotExist(err) {
+		return nil
+	}
+
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
+	}
+
+	_, err = toml.Decode(string(data), &conf)
+	return err
+}
+
+func parseFlags() error {
 	flag.Parse()
 
 	// remove / on url if necessary
@@ -40,12 +78,10 @@ func parseFlags() (client.Flags, error) {
 	// checks that the given ttl is correct
 	if flags.TTL != "" {
 		_, err := time.ParseDuration(flags.TTL)
-		if err != nil {
-			return flags, err
-		}
+		return err
 	}
 
-	return flags, nil
+	return nil
 }
 
 // sendFile uses the client to send the data to the upd server.
@@ -59,12 +95,27 @@ func sendFile(wg *sync.WaitGroup, client *client.Client, filename string) {
 	}
 }
 
+func replaceDefaultFlagsWithConfig() {
+	if flags.ServerUrl == defaultServerURL {
+		flags.ServerUrl = conf.ServerURL
+	}
+	if flags.SecretKey == "" {
+		flags.SecretKey = conf.SecretKey
+	}
+}
+
 func main() {
-	flags, err := parseFlags()
-	if err != nil {
+	if err := parseFlags(); err != nil {
 		fmt.Println(`Wrong duration format, it should be such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"`)
 		os.Exit(1)
 	}
+
+	if err := parseConfig(); err != nil {
+		fmt.Println("Unable to read configuration file, error was %s", err)
+		os.Exit(1)
+	}
+
+	replaceDefaultFlagsWithConfig()
 
 	c := client.NewClient(flags)
 
