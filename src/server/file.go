@@ -20,7 +20,7 @@ import (
 func (s *Server) createS3Config(creds *credentials.Credentials, region string) *aws.Config {
 	return &aws.Config{
 		Credentials: creds,
-		Region:      region,
+		Region:      &region,
 	}
 }
 
@@ -70,11 +70,13 @@ func (s *Server) WriteFile(filename string, data []byte) error {
 		client := s3.New(s.createS3Config(creds, s.Config.S3Config.Region))
 		body := bytes.NewReader(data)
 
+		contentLength := int64(len(data))
+
 		// Creates the S3 put request
 		por := &s3.PutObjectInput{
 			Body:          body,
 			Key:           aws.String(filename),
-			ContentLength: aws.Long(int64(len(data))),
+			ContentLength: &contentLength,
 			Bucket:        aws.String(s.Config.S3Config.Bucket),
 		}
 
