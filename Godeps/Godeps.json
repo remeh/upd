@@ -1,0 +1,75 @@
+{
+	"ImportPath": "github.com/remeh/upd",
+	"GoVersion": "go1.5.1",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/BurntSushi/toml",
+			"Comment": "v0.1.0-21-g056c9bc",
+			"Rev": "056c9bc7be7190eaa7715723883caffa5f8fa3e4"
+		},
+		{
+			"ImportPath": "github.com/aws/aws-sdk-go/aws",
+			"Comment": "v0.9.6",
+			"Rev": "69142c71761512d894b028dc5c8cc312758372dd"
+		},
+		{
+			"ImportPath": "github.com/aws/aws-sdk-go/internal/endpoints",
+			"Comment": "v0.9.6",
+			"Rev": "69142c71761512d894b028dc5c8cc312758372dd"
+		},
+		{
+			"ImportPath": "github.com/aws/aws-sdk-go/internal/protocol/query",
+			"Comment": "v0.9.6",
+			"Rev": "69142c71761512d894b028dc5c8cc312758372dd"
+		},
+		{
+			"ImportPath": "github.com/aws/aws-sdk-go/internal/protocol/rest",
+			"Comment": "v0.9.6",
+			"Rev": "69142c71761512d894b028dc5c8cc312758372dd"
+		},
+		{
+			"ImportPath": "github.com/aws/aws-sdk-go/internal/protocol/restxml",
+			"Comment": "v0.9.6",
+			"Rev": "69142c71761512d894b028dc5c8cc312758372dd"
+		},
+		{
+			"ImportPath": "github.com/aws/aws-sdk-go/internal/protocol/xml/xmlutil",
+			"Comment": "v0.9.6",
+			"Rev": "69142c71761512d894b028dc5c8cc312758372dd"
+		},
+		{
+			"ImportPath": "github.com/aws/aws-sdk-go/internal/signer/v4",
+			"Comment": "v0.9.6",
+			"Rev": "69142c71761512d894b028dc5c8cc312758372dd"
+		},
+		{
+			"ImportPath": "github.com/aws/aws-sdk-go/service/s3",
+			"Comment": "v0.9.6",
+			"Rev": "69142c71761512d894b028dc5c8cc312758372dd"
+		},
+		{
+			"ImportPath": "github.com/boltdb/bolt",
+			"Comment": "v1.1.0-22-g6e1ca38",
+			"Rev": "6e1ca38c6a73025366cd8705553b404746ee6e63"
+		},
+		{
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "1c83b3eabd45b6d76072b66b746c20815fb2872d"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Rev": "49c024275504f0341e5a9971eb7ba7fa3dc7af40"
+		},
+		{
+			"ImportPath": "github.com/nfnt/resize",
+			"Rev": "dc93e1b98c579d90ee2fa15c1fd6dac34f6e7899"
+		},
+		{
+			"ImportPath": "github.com/vaughan0/go-ini",
+			"Rev": "a98ad7ee00ec53921f08832bc06ecf7fd600e6a1"
+		}
+	]
+}
