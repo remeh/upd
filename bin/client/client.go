@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"client"
+	"github.com/remeh/upd/src/client"
 )
 
 type Client struct {
