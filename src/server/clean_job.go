@@ -52,6 +52,4 @@ func (j CleanJob) Run() {
 			log.Println("[info] Deleted due to TTL:", entry.Filename)
 		}
 	}
-
-	log.Println("[info] Done cleaning")
 }
