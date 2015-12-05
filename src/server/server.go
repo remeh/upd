@@ -144,13 +144,15 @@ func (s *Server) deleteMetadata(name string) error {
 // getEntry looks in the Bolt DB whether this entry exists and returns it
 // if found, otherwise, nil is returned.
 func (s *Server) GetEntry(id string) (*Metadata, error) {
-	var metadata Metadata
+	var metadata *Metadata
 	err := s.Database.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("Metadata"))
 		v := bucket.Get([]byte(id))
 		if v == nil {
 			return nil
 		}
+
+		metadata = new(Metadata)
 
 		// unmarshal the bytes
 		err := json.Unmarshal(v, &metadata)
@@ -161,7 +163,7 @@ func (s *Server) GetEntry(id string) (*Metadata, error) {
 		return nil
 	})
 
-	return &metadata, err
+	return metadata, err
 }
 
 // GetLastUploaded reads into BoltDB the array

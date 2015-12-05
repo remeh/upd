@@ -48,6 +48,10 @@ func (l *LastUploadedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 			continue
 		}
 
+		if metadata == nil {
+			continue
+		}
+
 		lastUploadedResp = append(lastUploadedResp, LastUploadedResponse{
 			Name:         metadata.Filename,
 			Original:     metadata.Original,
