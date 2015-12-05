@@ -47,7 +47,7 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Existing file ?
-	if entry.Filename == "" {
+	if entry == nil || entry.Filename == "" {
 		w.WriteHeader(404)
 		return
 	}

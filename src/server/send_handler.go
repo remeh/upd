@@ -83,7 +83,7 @@ func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(500)
 			return
 		}
-		if entry.Filename == "" {
+		if entry == nil || entry.Filename == "" {
 			break
 		}
 	}
