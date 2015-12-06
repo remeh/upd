@@ -14,6 +14,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
@@ -67,7 +68,11 @@ func (s *Server) WriteFile(filename string, data []byte) error {
 	} else if s.Config.Storage == S3_STORAGE {
 		// S3 connection
 		creds := credentials.NewStaticCredentials(s.Config.S3Config.AccessKey, s.Config.S3Config.AccessSecret, "")
-		client := s3.New(s.createS3Config(creds, s.Config.S3Config.Region))
+		sess := session.New(&aws.Config{
+			Credentials: creds,
+			Region:      aws.String(s.Config.S3Config.Region),
+		})
+		client := s3.New(sess)
 		body := bytes.NewReader(data)
 
 		contentLength := int64(len(data))
@@ -110,7 +115,11 @@ func (s *Server) ReadFile(filename string) ([]byte, error) {
 	} else if s.Config.Storage == S3_STORAGE {
 		// S3 connection
 		creds := credentials.NewStaticCredentials(s.Config.S3Config.AccessKey, s.Config.S3Config.AccessSecret, "")
-		client := s3.New(s.createS3Config(creds, s.Config.S3Config.Region))
+		sess := session.New(&aws.Config{
+			Credentials: creds,
+			Region:      aws.String(s.Config.S3Config.Region),
+		})
+		client := s3.New(sess)
 
 		// The get request
 		gor := &s3.GetObjectInput{
@@ -151,7 +160,11 @@ func (s *Server) Expire(m Metadata) error {
 	} else if s.Config.Storage == S3_STORAGE {
 		// S3 connection
 		creds := credentials.NewStaticCredentials(s.Config.S3Config.AccessKey, s.Config.S3Config.AccessSecret, "")
-		client := s3.New(s.createS3Config(creds, s.Config.S3Config.Region))
+		sess := session.New(&aws.Config{
+			Credentials: creds,
+			Region:      aws.String(s.Config.S3Config.Region),
+		})
+		client := s3.New(sess)
 
 		// The get request
 		dor := &s3.DeleteObjectInput{
