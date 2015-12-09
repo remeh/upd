@@ -1,4 +1,4 @@
-FROM golang:1.4
+FROM golang:1.5
 
 COPY . /go/src/github.com/remeh/upd
 
