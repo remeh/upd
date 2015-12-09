@@ -109,8 +109,8 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// don't permit to large resize
-		if (iheight+1)*(iwidth+1) > 1920*1080 {
+		// don't permit too large resize
+		if iheight > 500 || iwidth > 500 {
 			w.WriteHeader(400)
 			return
 		}
