@@ -92,6 +92,7 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	width := r.Form.Get("w")
 	height := r.Form.Get("h")
 	if len(width) != 0 && len(height) != 0 {
+
 		iwidth, err := strconv.Atoi(width)
 		if err != nil {
 			w.WriteHeader(400)
@@ -99,6 +100,12 @@ func (s *ServingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		iheight, err := strconv.Atoi(height)
 		if err != nil {
+			w.WriteHeader(400)
+			return
+		}
+
+		// don't permit to large resize
+		if iheight*iwidth > 1920*1080 {
 			w.WriteHeader(400)
 			return
 		}
