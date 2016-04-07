@@ -62,7 +62,7 @@ func (s *Server) Start() {
 // Starts the Clean Job
 func (s *Server) StartCleanJob() {
 	timer := time.NewTicker(60 * time.Second)
-	for _ = range timer.C {
+	for range timer.C {
 		job := CleanJob{s}
 		job.Run()
 	}
