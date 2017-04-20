@@ -33,9 +33,7 @@ type SearchTagsEntryResponse struct {
 }
 
 func (l *SearchTagsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// checks the secret key
-	key := r.Header.Get(SECRET_KEY_HEADER)
-	if l.Server.Config.SecretKey != "" && key != l.Server.Config.SecretKey {
+	if !IsAuthValid(l.Server, r) {
 		w.WriteHeader(403)
 		return
 	}
