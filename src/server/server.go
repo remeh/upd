@@ -211,6 +211,9 @@ func (s *Server) prepareRouter() *mux.Router {
 	searchTagsHandler := &SearchTagsHandler{s}
 	r.Handle(s.Config.Route+"/1.0/search_tags", searchTagsHandler)
 
+	authCheckHandler := &AuthCheckHandler{s}
+	r.Handle(s.Config.Route+"/1.0/auth_check", authCheckHandler)
+
 	deleteHandler := &DeleteHandler{s}
 	r.Handle(s.Config.Route+"/{file}/{key}", deleteHandler)
 
