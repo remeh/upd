@@ -11,11 +11,11 @@ type AuthCheckHandler struct {
 func (a *AuthCheckHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if !IsAuthValid(a.Server, r) {
 		w.WriteHeader(403)
-		w.Write([]byte("{auth_status:'invalid_credentials'}"))
+		w.Write([]byte(`{"auth_status":"invalid_credentials"}`))
 		return
 	}
 
-	w.Write([]byte("{auth_status:'ok'}"))
+	w.Write([]byte(`{"auth_status":"ok"}`))
 }
 
 // IsAuthValid returns whether the HTTP request contains the expected secret key, if the configuration
