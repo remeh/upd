@@ -37,8 +37,7 @@ const (
 
 func (s *SendHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// checks the secret key
-	key := r.Header.Get(SECRET_KEY_HEADER)
-	if s.Server.Config.SecretKey != "" && key != s.Server.Config.SecretKey {
+	if !IsAuthValid(s.Server, r) {
 		w.WriteHeader(403)
 		return
 	}

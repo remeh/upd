@@ -198,7 +198,7 @@ func (s *Server) SetLastUploaded(lastUploaded []string) error {
 }
 
 // Prepares the route
-func (s *Server) prepareRouter() *mux.Router {
+func (s *Server) prepareRouter() http.Handler {
 	r := mux.NewRouter()
 
 	println(s.Config.Route)
@@ -211,11 +211,15 @@ func (s *Server) prepareRouter() *mux.Router {
 	searchTagsHandler := &SearchTagsHandler{s}
 	r.Handle(s.Config.Route+"/1.0/search_tags", searchTagsHandler)
 
+	authCheckHandler := &AuthCheckHandler{s}
+	r.Handle(s.Config.Route+"/1.0/auth_check", authCheckHandler)
+
 	deleteHandler := &DeleteHandler{s}
 	r.Handle(s.Config.Route+"/{file}/{key}", deleteHandler)
 
 	sh := &ServingHandler{s}
 	r.Handle(s.Config.Route+"/{file}", sh) // Serving route.
 
-	return r
+	// Wrap it into a CORS handler, so we can use AJAX with UPD
+	return &CorsHandler{r}
 }
