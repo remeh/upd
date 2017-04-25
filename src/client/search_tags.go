@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"os"
 
-	"server"
+	"github.com/remeh/upd/src/server"
 )
 
 const (

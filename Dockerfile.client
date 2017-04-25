@@ -1,0 +1,10 @@
+FROM golang:1.5
+
+ENV GO15VENDOREXPERIMENT 1
+
+COPY 	. /go/src/github.com/remeh/upd
+WORKDIR /go/src/github.com/remeh/upd
+
+RUN go build  -v -o /upd bin/client/client.go
+
+ENTRYPOINT ["/upd"]

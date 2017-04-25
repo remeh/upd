@@ -9,7 +9,7 @@ import (
 	"log"
 	"os"
 
-	"server"
+	"github.com/remeh/upd/src/server"
 
 	"github.com/BurntSushi/toml"
 )

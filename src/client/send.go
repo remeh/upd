@@ -14,7 +14,7 @@ import (
 	"net/http"
 	"os"
 
-	"server"
+	"github.com/remeh/upd/src/server"
 )
 
 // sendData sends the data to the upd server.
